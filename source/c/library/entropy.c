@@ -1,0 +1,69 @@
+/* OneJoker RNG library <http://lcrocker.github.io/onejoker/ojrandlib>
+ *
+ * Fetch some entropy from the system to seed the RNG.
+ */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
+
+#include "ojrandlib.h"
+
+#if defined(__unix)
+
+#include <unistd.h>
+#include <fcntl.h>
+
+extern void ojr_get_system_entropy(uint32_t *dest, int dsize) {
+    int fn;
+
+    fn = open("/dev/urandom", O_RDONLY);
+    if (-1 == fn) {
+        fprintf(stderr, "ojrandlib: Can't open /dev/urandom.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (4 * dsize != read(fn, (char *)dest, 4 * dsize)) {
+        fprintf(stderr,
+            "ojrandlib: Failed to read %d bytes from /dev/urandom.\n",
+            4 * dsize);
+        exit(EXIT_FAILURE);        
+    }
+    close(fn);
+    return;
+}
+
+#elif defined(_WIN32)
+
+#include <windows.h>
+#include <wincrypt.h>
+
+extern void ojr_get_system_entropy(uint32_t *dest, int dsize) {
+    HCRYPTPROV hCryptProv;
+
+    if (! CryptAcquireContext(&hCryptProv, "LDC",
+        0, PROV_RSA_FULL, 0)) {
+        if (! CryptAcquireContext(&hCryptProv, "LDC",
+            0, PROV_RSA_FULL, CRYPT_NEWKEYSET)) {
+
+            fprintf(stderr,
+                "ojrandlib: Can't open crypto context.\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    if (! CryptGenRandom(hCryptProv, 4 * dsize, (BYTE *)dest)) {
+            fprintf(stderr,
+                "ojrandlib: Failed CryptGenRandom(%d).\n", 4 * dsize);
+            exit(EXIT_FAILURE);
+    }
+    CryptReleaseContext(hCryptProv, 0);
+}
+
+#else /* not Unix or Windows */
+
+/* Should probably do somthing here with time(), getpid(), etc. as a fallback.
+
+extern void ojr_get_system_entropy(uint32_t *dest, int dsize) {
+}
+*/
+
+#endif /* __unix, _WIN32 */

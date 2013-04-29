@@ -22,8 +22,8 @@ int main(int argc, char *argv[]) {
     g.seed(s);
 
     for (int i = 0; i < 100; ++i) {
-		printf("%10u ", g.next32());
-		if (4 == (i % 5)) printf("\n");    	
+        printf("%10u ", g.next32());
+        if (4 == (i % 5)) printf("\n");     
     }
     return EXIT_SUCCESS;
 }

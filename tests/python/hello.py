@@ -18,7 +18,7 @@ g = rl.Generator("mt19937")
 g.seed([0x123, 0x234, 0x345, 0x456])
 
 for i in range(100):
-	print("{:10d} ".format(g.next32() & 0xFFFFFFFF), end = "")
-	if 4 == (i % 5):
-		print()
+    print("{:10d} ".format(g.next32() & 0xFFFFFFFF), end = "")
+    if 4 == (i % 5):
+        print()
 

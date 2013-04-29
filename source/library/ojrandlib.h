@@ -74,9 +74,9 @@ extern double ojr_next_gaussian(ojr_generator *g);
 
 extern int ojr_rand(ojr_generator *g, int limit);
 extern void ojr_shuffle_int_array(
-	ojr_generator *g, int *array, int size, int count);
+    ojr_generator *g, int *array, int size, int count);
 extern void ojr_shuffle_pointer_array(
-	ojr_generator *g, void **array, int size, int count);
+    ojr_generator *g, void **array, int size, int count);
 
 
 /* OTHER */

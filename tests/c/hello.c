@@ -1,6 +1,10 @@
 /* OneJoker RNG library <http://lcrocker.github.io/onejoker/ojrandlib>
  *
- * Test for pseudo-random number generator.
+ * To the extent possibile under law, Lee Daniel Crocker has waived all
+ * copyright and related or neighboring rights to this work.
+ * <http://creativecommons.org/publicdomain/zero/1.0/>
+ *
+ * Basic test for pseudo-random number generator.
  */
 
 #include <stdlib.h>
@@ -8,10 +12,18 @@
 
 #include "ojrandlib.h"
 
+uint32_t mtseed[] = { 0x123, 0x234, 0x345, 0x456 };
+
 int main(int argc, char *argv[]) {
-    ojr_generator *g = ojr_new(NULL);
-    ojr_seed(g, NULL, 0);
-    printf("%d %d %d\n", ojr_next16(g), ojr_next32(g), ojr_rand(g, 52));
+    int i;
+    ojr_generator *g = ojr_new("mt19937");
+    ojr_seed(g, mtseed, 4);
+
+    for (i = 0; i < 100; ++i) {
+        printf("%10u ", ojr_next32(g));
+        if (4 == (i % 5)) printf("\n");
+    }
+
     ojr_close(g);
     return EXIT_SUCCESS;
 }

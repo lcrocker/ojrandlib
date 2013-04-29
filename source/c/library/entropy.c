@@ -1,5 +1,9 @@
 /* OneJoker RNG library <http://lcrocker.github.io/onejoker/ojrandlib>
  *
+ * To the extent possibile under law, Lee Daniel Crocker has waived all
+ * copyright and related or neighboring rights to this work.
+ * <http://creativecommons.org/publicdomain/zero/1.0/>
+ *
  * Fetch some entropy from the system to seed the RNG.
  */
 

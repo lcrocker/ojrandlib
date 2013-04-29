@@ -17,15 +17,13 @@ using namespace oj;
 static const uint32_t mtseed[] = { 0x123, 0x234, 0x345, 0x456 };
 
 int main(int argc, char *argv[]) {
-    int i;
     Seed s(mtseed, mtseed + 4);
     Generator g("mt19937");
     g.seed(s);
 
-    for (i = 0; i < 100; ++i) {
+    for (int i = 0; i < 100; ++i) {
 		printf("%10u ", g.next32());
 		if (4 == (i % 5)) printf("\n");    	
     }
-
     return EXIT_SUCCESS;
 }

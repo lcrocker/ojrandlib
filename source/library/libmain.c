@@ -34,54 +34,60 @@ ojr_algorithm *_ojr_algorithms[] = {
     NULL,
 };
 
-/* Get the address of the info structure for an algorithm by name.
+/* External interface to agorithm list. Each algorithm has an integer
+ * ID from 1 to <count> used to fetch info.
  */
 
-ojr_algorithm *ojr_algorithm_info(const char *name) {
-    ojr_algorithm **aap = _ojr_algorithms;
-    while (NULL != *aap) {
-        if (0 == STRCASECMP(name, (*aap)->name)) return *aap;
-        ++aap;
+static int _ojr_algorithm_count = 0;
+
+extern int ojr_algorithm_count(void) {
+    if (0 == _ojr_algorithm_count) {
+        ojr_algorithm **aap = _ojr_algorithms;
+        while (NULL != *aap) { ++aap; ++_ojr_algorithm_count; }
     }
-    return NULL;
+    return _ojr_algorithm_count;
 }
 
-/* How many pre-loaded algorithms are available?
- */
-
-int ojr_algorithm_count(void) {
-    int c = 0;
-    ojr_algorithm **aap = _ojr_algorithms;
-    while (NULL != *aap) { ++aap; ++c; }
-    return c;
-}
-
-/* Give me a pointer to the list of the available algorithms.
- */
-
-ojr_algorithm **ojr_algorithm_list(void) {
-    return _ojr_algorithms;
-}
-
-/* Give me a new generator given an algorithm name. If name is NULL,
- * just give us the first on on the list. Generator won't be usable
- * until seeded. Return NULL if something goes wrong.
- */
-
-ojr_generator *ojr_new(const char *aname) {
-    ojr_algorithm *ap, **aap = _ojr_algorithms;
-    ojr_generator *gp = NULL;
-
-    if (NULL != aname) {
-        while (NULL != *aap) {
-            if (0 == STRCASECMP(aname, (*aap)->name)) break;
-            ++aap;
+extern int ojr_algorithm_id(const char *name) {
+    int i, c = ojr_algorithm_count();
+    for (i = 0; i < c; ++i) {
+        if (0 == STRCASECMP(name, (_ojr_algorithms[i])->name)) {
+            return i + 1;
         }
-        if (! *aap) return NULL;
     }
-    ap = *aap;
+    return 0;
+}
+
+extern char *ojr_algorithm_name(int id) {
+    if (id < 1 || id > ojr_algorithm_count()) return NULL;
+    return (_ojr_algorithms[id - 1])->name;
+}
+
+extern int ojr_algorithm_seedsize(int id) {
+    if (id < 1 || id > ojr_algorithm_count()) return 0;
+    return (_ojr_algorithms[id - 1])->seedsize;
+}
+
+extern int ojr_algorithm_statesize(int id) {
+    if (id < 1 || id > ojr_algorithm_count()) return 0;
+    return (_ojr_algorithms[id - 1])->statesize;
+}
+
+/* Give me a new generator with the given algorithm. If algorithm ID is 0,
+ * use a default. Return NULL if something goes wrong.
+ */
+
+ojr_generator *ojr_new(int id) {
+    ojr_algorithm *ap;
+    ojr_generator *gp;
+
+    if (0 == id) id = 1;
+    if (id > ojr_algorithm_count()) return NULL;
+    ap = _ojr_algorithms[id - 1];
+
     gp = malloc(sizeof(ojr_generator));
     if (gp) {
+        gp->_id = id;
         gp->algorithm = ap;
         gp->_leftover = gp->seedsize = 0;
         gp->statesize = ap->statesize;
@@ -220,6 +226,8 @@ void _ojr_default_reseed(ojr_generator *g) {
     }
 }
 
+int ojr_get_seedsize(ojr_generator *g) { return g->seedsize; }
+
 /* Return the stored seed. If we provided enough space for the whole seed,
  * and the generator was only seeded once, then return 1, indicating that
  * the seed we got can be used to reproduce the sequence. Otherwise,
@@ -236,6 +244,11 @@ int ojr_get_seed(ojr_generator *g, uint32_t *seed, int size) {
     if (size >= g->seedsize && 0x5eeded01 == g->_status) return 1;
     return 0;
 }
+
+/* Which algorithm are we using?
+ */
+
+int ojr_get_algorithm(ojr_generator *g) { return g->_id; }
 
 /* Return next 32, 16, or 64 random bits from buffer. Buffer is typed as
  * array of 16-bit shorts, so that's out minimum alignment unit. Refill

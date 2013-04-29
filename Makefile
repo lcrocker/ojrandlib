@@ -24,9 +24,9 @@ LIBCNAMES = libmain.c entropy.c jkiss.c mt19937.c
 LIBOBJECTS = $(patsubst %.c,$(BLDDIR)/%.o,$(LIBCNAMES))
 LIBOBJECTS += $(BLDDIR)/wrapper.o
 
-.PHONY: all lib test clean
+.PHONY: all lib test clean python pytest
 
-all: lib test
+all: lib test python
 
 lib: $(BLDDIR)/$(LIBNAME)
 
@@ -54,3 +54,14 @@ $(BLDDIR)/hello: $(TESTDIR)/c/hello.c $(BLDDIR)/$(LIBNAME)
 
 $(BLDDIR)/cpphello: $(TESTDIR)/cpp/hello.cc $(BLDDIR)/$(LIBNAME)
 	$(CXX) $(CXXFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lojrand
+
+python: $(BLDDIR)/ojrandlib.py $(BLDDIR)/hello.py
+
+pytest: python lib
+	cd $(BLDDIR) && ./hello.py
+
+$(BLDDIR)/ojrandlib.py: $(SRCDIR)/python/ojrandlib.py
+	cp $< $@
+
+$(BLDDIR)/hello.py: $(TESTDIR)/python/hello.py
+	cp $< $@

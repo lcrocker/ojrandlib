@@ -18,7 +18,7 @@ extern "C" {
 /* STRUCTURES */
 
 struct _ojr_generator {
-    int _status, _leftover;
+    int _status, _leftover, _id;
     int seedsize, statesize, bufsize;
     struct _ojr_algorithm *algorithm;
     void *extra;
@@ -45,11 +45,13 @@ extern ojr_algorithm *_ojr_algorithms[];
 
 /* PROTOTYPES */
 
-extern ojr_algorithm *ojr_algorithm_info(const char *);
 extern int ojr_algorithm_count(void);
-extern ojr_algorithm **ojr_algorithm_list(void);
+extern int ojr_algorithm_id(const char *name);
+extern char *ojr_algorithm_name(int id);
+extern int ojr_algorithm_seedsize(int id);
+extern int ojr_algorithm_statesize(int id);
 
-extern ojr_generator *ojr_new(const char *aname);
+extern ojr_generator *ojr_new(int id);
 extern void ojr_close(ojr_generator *g);
 
 extern void _ojr_default_seed(ojr_generator *g);
@@ -57,7 +59,10 @@ extern void _ojr_default_reseed(ojr_generator *g);
 
 extern int ojr_seed(ojr_generator *g, uint32_t *seed, int size);
 extern int ojr_reseed(ojr_generator *g, uint32_t *seed, int size);
+extern int ojr_get_seedsize(ojr_generator *g);
 extern int ojr_get_seed(ojr_generator *g, uint32_t *seed, int size);
+extern int ojr_get_algorithm(ojr_generator *g);
+
 extern void ojr_get_system_entropy(uint32_t *dest, int dsize);
 
 extern uint16_t ojr_next16(ojr_generator *g);
@@ -99,10 +104,18 @@ typedef std::vector<uint32_t> Seed;
 class Generator {
 private:
     ojr_generator *cg;
+
 public:
     Generator();
+    Generator(int id);
     Generator(const char *name);
     ~Generator();
+
+    static int algorithmCount();
+    static int algorithmID(const char *name);
+    static char *algorithmName(int id);
+    static int algorithmSeedsize(int id);
+    static int algorithmStatesize(int id);
 
     int seed(uint32_t val);
     int seed(Seed vec);
@@ -112,7 +125,9 @@ public:
     int reseed(Seed vec);
     int reseed();
 
+    int seedSize();
     void getSeed(Seed &os);
+    int getAlgorithm();
 
     uint16_t next16();
     uint32_t next32();

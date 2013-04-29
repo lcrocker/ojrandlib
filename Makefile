@@ -12,16 +12,17 @@ TESTDIR = $(ROOT)/tests
 CC = gcc
 CFLAGS = -g -DDEBUG -Wall -fpic
 # CFLAGS = -O3 -DNDEBUG -Wall -fpic
+CXX = g++
+CXXFLAGS = $(CFLAGS)
+LD = g++
+LDFLAGS =
 JAVACFLAGS = -g -Werror
 # JAVACFLAGS = -g:none
 
 LIBNAME = libojrand.so
-LIBSRCNAMES = libmain.c entropy.c jkiss.c mt19937.c
-LIBSOURCES = $(patsubst %.c,$(SRCDIR)/c/library/%.c,$(LIBSRCNAMES))
-LIBOBJECTS = $(patsubst %.c,$(BLDDIR)/%.o,$(LIBSRCNAMES))
-
-TESTSRCNAMES = hello.c
-TESTEXES = $(patsubst %.c,$(BLDDIR)/%,$(TESTSRCNAMES))
+LIBCNAMES = libmain.c entropy.c jkiss.c mt19937.c
+LIBOBJECTS = $(patsubst %.c,$(BLDDIR)/%.o,$(LIBCNAMES))
+LIBOBJECTS += $(BLDDIR)/wrapper.o
 
 .PHONY: all lib test clean
 
@@ -29,8 +30,9 @@ all: lib test
 
 lib: $(BLDDIR)/$(LIBNAME)
 
-test: $(TESTEXES)
+test: $(BLDDIR)/hello $(BLDDIR)/cpphello
 	cd $(BLDDIR) && ./hello
+	cd $(BLDDIR) && ./cpphello
 
 clean:
 	rm -rf $(BLDDIR)/*
@@ -38,12 +40,17 @@ clean:
 $(BLDDIR):
 	mkdir -p $(BLDDIR)
 
-$(BLDDIR)/%.o: $(SRCDIR)/c/library/%.c $(SRCDIR)/c/include/ojrandlib.h | $(BLDDIR)
-	$(CC) $(CFLAGS) -c -I$(SRCDIR)/c/include -o $@ $<
+$(BLDDIR)/wrapper.o: $(SRCDIR)/library/wrapper.cc $(SRCDIR)/library/ojrandlib.h | $(BLDDIR)
+	$(CXX) $(CXXFLAGS) -c -I$(SRCDIR)/library -o $@ $<
+
+$(BLDDIR)/%.o: $(SRCDIR)/library/%.c $(SRCDIR)/library/ojrandlib.h | $(BLDDIR)
+	$(CC) $(CFLAGS) -c -I$(SRCDIR)/library -o $@ $<
 
 $(BLDDIR)/$(LIBNAME): $(LIBOBJECTS)
-	$(CC) $(CFLAGS) -shared -o $@ $^ -lm
+	$(LD) $(LDFLAGS) -shared -o $@ $^ -lm
 
 $(BLDDIR)/hello: $(TESTDIR)/c/hello.c $(BLDDIR)/$(LIBNAME)
-	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(SRCDIR)/c/include -o $@ $< -lm -lojrand
+	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lojrand
 
+$(BLDDIR)/cpphello: $(TESTDIR)/cpp/hello.cc $(BLDDIR)/$(LIBNAME)
+	$(CXX) $(CXXFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lojrand

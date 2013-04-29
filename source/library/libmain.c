@@ -37,7 +37,7 @@ ojr_algorithm *_ojr_algorithms[] = {
 /* Get the address of the info structure for an algorithm by name.
  */
 
-ojr_algorithm *ojr_algorithm_info(char *name) {
+ojr_algorithm *ojr_algorithm_info(const char *name) {
     ojr_algorithm **aap = _ojr_algorithms;
     while (NULL != *aap) {
         if (0 == STRCASECMP(name, (*aap)->name)) return *aap;
@@ -68,7 +68,7 @@ ojr_algorithm **ojr_algorithm_list(void) {
  * until seeded. Return NULL if something goes wrong.
  */
 
-ojr_generator *ojr_new(char *aname) {
+ojr_generator *ojr_new(const char *aname) {
     ojr_algorithm *ap, **aap = _ojr_algorithms;
     ojr_generator *gp = NULL;
 

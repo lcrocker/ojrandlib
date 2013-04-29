@@ -10,7 +10,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 #include <stdint.h>
 
@@ -45,11 +45,11 @@ extern ojr_algorithm *_ojr_algorithms[];
 
 /* PROTOTYPES */
 
-extern ojr_algorithm *ojr_algorithm_info(char *);
+extern ojr_algorithm *ojr_algorithm_info(const char *);
 extern int ojr_algorithm_count(void);
 extern ojr_algorithm **ojr_algorithm_list(void);
 
-extern ojr_generator *ojr_new(char *aname);
+extern ojr_generator *ojr_new(const char *aname);
 extern void ojr_close(ojr_generator *g);
 
 extern void _ojr_default_seed(ojr_generator *g);
@@ -86,5 +86,46 @@ extern void ojr_shuffle_pointer_array(
 #ifdef __cplusplus
 } /* end of extern "C" */
 #endif /* __cplusplus */
+
+
+#ifdef __cplusplus
+
+#include <vector>
+
+namespace oj {
+
+typedef std::vector<uint32_t> Seed;
+
+class Generator {
+private:
+    ojr_generator *cg;
+public:
+    Generator();
+    Generator(const char *name);
+    ~Generator();
+
+    int seed(uint32_t val);
+    int seed(Seed vec);
+    int seed();
+
+    int reseed(uint32_t val);
+    int reseed(Seed vec);
+    int reseed();
+
+    void getSeed(Seed &os);
+
+    uint16_t next16();
+    uint32_t next32();
+    uint64_t next64();
+    double nextDouble();
+    double nextSignedDouble();
+    double nextGaussian();
+
+    int rand(int limit);
+};
+
+} /* namespace */
+
+#endif /* __cplusplus for class definition */
 
 #endif /* _OJRANDLIB_H */

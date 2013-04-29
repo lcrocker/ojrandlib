@@ -62,7 +62,11 @@ static void _ojr_mt19937_seed(ojr_generator *g) {
     uint32_t *mt = g->state;
     assert(624 == g->statesize);
 
-    mt[0] = 19650218U;
+    if (1 == g->seedsize) {
+        mt[0]= g->seed[0];
+    } else {
+        mt[0] = 19650218U;
+    }
     for (i = 1; i < N; ++i) {
         mt[i] = (1812433253U * (mt[i - 1] ^ (mt[i - 1] >> 30)) + i); 
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
@@ -70,6 +74,8 @@ static void _ojr_mt19937_seed(ojr_generator *g) {
         /* only MSBs of the array mt[].                        */
         /* 2002/01/09 modified by Makoto Matsumoto             */
     }
+    if (1 == g->seedsize) return;
+
     i = 1; j = 0;
     k = (N > g->seedsize) ? N : g->seedsize;
     while (k) {

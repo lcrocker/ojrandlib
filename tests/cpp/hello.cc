@@ -7,21 +7,25 @@
  * Basic test for pseudo-random number generator.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstdio>
+using namespace std;
 
 #include "ojrandlib.h"
+using namespace oj;
+
+static const uint32_t mtseed[] = { 0x123, 0x234, 0x345, 0x456 };
 
 int main(int argc, char *argv[]) {
     int i;
-    ojr_generator *g = ojr_new("jkiss");
-    ojr_seed(g, NULL, 0);
+    Seed s(mtseed, mtseed + 4);
+    Generator g("mt19937");
+    g.seed(s);
 
     for (i = 0; i < 100; ++i) {
-        printf("%10u ", ojr_next32(g));
-        if (4 == (i % 5)) printf("\n");
+		printf("%10u ", g.next32());
+		if (4 == (i % 5)) printf("\n");    	
     }
 
-    ojr_close(g);
     return EXIT_SUCCESS;
 }

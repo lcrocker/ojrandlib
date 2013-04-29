@@ -30,6 +30,12 @@ static void _ojr_jkiss_close(ojr_generator *g) { return; }
 extern void _ojr_default_seed(ojr_generator *g);
 
 static void _ojr_jkiss_seed(ojr_generator *g) {
+    if (g->seedsize < 4) {
+        g->state[0] = 123456789;
+        g->state[1] = 987654321;
+        g->state[2] = 43219876;
+        g->state[3] = 6543217;
+    }
     _ojr_default_seed(g);
     if (0 == g->state[1]) g->state[1] = 1;
     g->state[3] = g->state[3] % 698769068 + 1;

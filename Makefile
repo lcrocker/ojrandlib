@@ -20,19 +20,20 @@ JAVACFLAGS = -g -Werror
 # JAVACFLAGS = -g:none
 
 LIBNAME = libojrand.so
-LIBCNAMES = libmain.c entropy.c jkiss.c mt19937.c
+LIBCNAMES = libmain.c capi.c entropy.c zignor.c jkiss.c mt19937.c
 LIBOBJECTS = $(patsubst %.c,$(BLDDIR)/%.o,$(LIBCNAMES))
 LIBOBJECTS += $(BLDDIR)/wrapper.o
 
-.PHONY: all lib test clean python pytest
+.PHONY: all lib test clean python java
 
-all: lib test python
+all: lib test python java
 
 lib: $(BLDDIR)/$(LIBNAME)
 
-test: $(BLDDIR)/hello $(BLDDIR)/cpphello
+test: $(BLDDIR)/hello $(BLDDIR)/cpphello $(BLDDIR)/hello.py
 	cd $(BLDDIR) && ./hello
 	cd $(BLDDIR) && ./cpphello
+	cd $(BLDDIR) && ./hello.py
 
 clean:
 	rm -rf $(BLDDIR)/*
@@ -55,13 +56,10 @@ $(BLDDIR)/hello: $(TESTDIR)/c/hello.c $(BLDDIR)/$(LIBNAME)
 $(BLDDIR)/cpphello: $(TESTDIR)/cpp/hello.cc $(BLDDIR)/$(LIBNAME)
 	$(CXX) $(CXXFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lojrand
 
-python: $(BLDDIR)/ojrandlib.py $(BLDDIR)/hello.py
-
-pytest: python lib
-	cd $(BLDDIR) && ./hello.py
+python: $(BLDDIR)/ojrandlib.py
 
 $(BLDDIR)/ojrandlib.py: $(SRCDIR)/python/ojrandlib.py
 	cp $< $@
 
-$(BLDDIR)/hello.py: $(TESTDIR)/python/hello.py
+$(BLDDIR)/hello.py: $(TESTDIR)/python/hello.py python
 	cp $< $@

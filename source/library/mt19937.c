@@ -4,7 +4,7 @@
  * reference code "mt19937ar.c" by Takuji Nishimura and Makoto Matsumoto.
  *
  * Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
- * All rights reserved.                          
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -20,7 +20,7 @@
  *   3. The names of its contributors may not be used to endorse or promote
  *      products derived from this software without specific prior written
  *      permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -44,13 +44,7 @@
 
 #include "ojrandlib.h"
 
-extern void _ojr_default_reseed(ojr_generator *g);
-extern void _ojr_default_seed(ojr_generator *g);
-
-static void _ojr_mt19937_open(ojr_generator *g) { return; }
-static void _ojr_mt19937_close(ojr_generator *g) { return; }
-
-/* Period parameters */  
+/* Period parameters */
 #define N 624
 #define M 397
 #define MATRIX_A 0x9908b0dfUL   /* constant vector a */
@@ -68,7 +62,7 @@ static void _ojr_mt19937_seed(ojr_generator *g) {
         mt[0] = 19650218U;
     }
     for (i = 1; i < N; ++i) {
-        mt[i] = (1812433253U * (mt[i - 1] ^ (mt[i - 1] >> 30)) + i); 
+        mt[i] = (1812433253U * (mt[i - 1] ^ (mt[i - 1] >> 30)) + i);
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
         /* In the previous versions, MSBs of the seed affect   */
         /* only MSBs of the array mt[].                        */
@@ -96,9 +90,10 @@ static void _ojr_mt19937_seed(ojr_generator *g) {
     mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */
 }
 
-static void _ojr_mt19937_reseed(ojr_generator *g) {
+static void _ojr_mt19937_reseed(ojr_generator *g, int value) {
     assert(624 == g->statesize);
-    _ojr_default_reseed(g);
+    ojr_default_reseed(g, value);
+    g->state[4] = g->state[0];
     g->state[0] = 0x80000000UL;
 }
 
@@ -119,7 +114,7 @@ static void _ojr_mt19937_refill(struct _ojr_generator *g) {
     y = (mt[N - 1] & UPPER_MASK) | (mt[0] & LOWER_MASK);
     mt[N - 1] = mt[M - 1] ^ (y >> 1) ^ mag01[y & 0x1U];
 
-    for (i = 0; i < N; ++i) {  
+    for (i = 0; i < N; ++i) {
         y = mt[i];
         /* Tempering */
         y ^= (y >> 11);
@@ -133,8 +128,7 @@ static void _ojr_mt19937_refill(struct _ojr_generator *g) {
 ojr_algorithm ojr_algorithm_mt19937 = {
     "mt19937",
     16, 624, 624,
-    _ojr_mt19937_open,
-    _ojr_mt19937_close,
+    NULL, NULL,
     _ojr_mt19937_seed,
     _ojr_mt19937_reseed,
     _ojr_mt19937_refill,

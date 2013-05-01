@@ -14,8 +14,8 @@
 
 int main(int argc, char *argv[]) {
     int i;
-    ojr_generator *g = ojr_new(0);
-    ojr_seed(g, NULL, 0);
+    ojr_generator *g = ojr_open(0);
+    ojr_good_seed(g);
 
     for (i = 0; i < 100; ++i) {
         printf("%10u ", ojr_next32(g));

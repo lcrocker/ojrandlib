@@ -30,7 +30,7 @@ extern void ojr_get_system_entropy(uint32_t *dest, int dsize) {
         fprintf(stderr,
             "ojrandlib: Failed to read %d bytes from /dev/urandom.\n",
             4 * dsize);
-        exit(EXIT_FAILURE);        
+        exit(EXIT_FAILURE);
     }
     close(fn);
     return;
@@ -62,12 +62,33 @@ extern void ojr_get_system_entropy(uint32_t *dest, int dsize) {
     CryptReleaseContext(hCryptProv, 0);
 }
 
-#else /* not Unix or Windows */
+#else /* Don't have /dev/urandom or CryptGenRandom. Use getpid, time, etc. */
 
-/* Should probably do somthing here with time(), getpid(), etc. as a fallback.
+#include <unistd.h>
+#include <time.h>
+#include <string.h>
 
 extern void ojr_get_system_entropy(uint32_t *dest, int dsize) {
+    char cwd[256];
+    int i, c, dl, x = 98765 + (int)getpid();
+    assert(0 != dsize);
+
+    x *= 69069; x += (int)getuid();
+    x *= 69069; x += (int)time();
+    *dest = x;
+
+    if (NULL == getcwd(cwd, sizeof(cwd))) {
+        fprintf(stderr,
+            "ojrandlib: getcwd() failed in seed function.\n");
+        exit(EXIT_FAILURE);
+    }
+    dl = strlen()
+    c = 0;
+    for (i = 1; i < dsize; ++i) {
+        x *= 69069; x += cwd[c];
+        dest[i] = x;
+        if (++c >= dl) c = 0;
+    }
 }
-*/
 
 #endif /* __unix, _WIN32 */

@@ -24,11 +24,6 @@
 
 #include "ojrandlib.h"
 
-static void _ojr_jkiss_open(ojr_generator *g) { return; }
-static void _ojr_jkiss_close(ojr_generator *g) { return; }
-
-extern void _ojr_default_seed(ojr_generator *g);
-
 static void _ojr_jkiss_seed(ojr_generator *g) {
     if (g->seedsize < 4) {
         g->state[0] = 123456789;
@@ -36,15 +31,13 @@ static void _ojr_jkiss_seed(ojr_generator *g) {
         g->state[2] = 43219876;
         g->state[3] = 6543217;
     }
-    _ojr_default_seed(g);
+    ojr_default_seed(g);
     if (0 == g->state[1]) g->state[1] = 1;
     g->state[3] = g->state[3] % 698769068 + 1;
 }
 
-extern void _ojr_default_reseed(ojr_generator *g);
-
-static void _ojr_jkiss_reseed(ojr_generator *g) {
-    _ojr_default_reseed(g);
+static void _ojr_jkiss_reseed(ojr_generator *g, int value) {
+    ojr_default_reseed(g, value);
     if (0 == g->state[1]) g->state[1] = 1;
     g->state[3] = g->state[3] % 698769068 + 1;
 }
@@ -72,13 +65,11 @@ static void _ojr_jkiss_refill(ojr_generator *g) {
  */
 
 ojr_algorithm ojr_algorithm_jkiss = {
-    "jkiss",                /* name */
-    4,                      /* Suggested seed size, in 32-bit words */
-    4,                      /* Size of actual state vector in words */
-    256,                    /* Size of buffer to allocate in words */
-    _ojr_jkiss_open,        /* Function called after allocating buffers */
-    _ojr_jkiss_close,       /* Cleanup function */
-    _ojr_jkiss_seed,        /* Apply seed to empty state vector */
-    _ojr_jkiss_reseed,      /* Add new seed to existing state */
-    _ojr_jkiss_refill,      /* Produce a bufferfull of randomness */
+    "jkiss",
+    4, 4,
+    256,                /* Any reasonable value is OK here */
+    NULL, NULL,         /* No need for open() or close() */
+    _ojr_jkiss_seed,    /* Apply seed to empty state vector */
+    _ojr_jkiss_reseed,  /* Add new seed to existing state */
+    _ojr_jkiss_refill,  /* Produce a bufferfull of randomness */
 };

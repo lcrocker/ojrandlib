@@ -23,6 +23,8 @@ LIBNAME = libojrand.so
 LIBCNAMES = libmain.c capi.c entropy.c zignor.c jkiss.c mt19937.c
 LIBOBJECTS = $(patsubst %.c,$(BLDDIR)/%.o,$(LIBCNAMES))
 LIBOBJECTS += $(BLDDIR)/wrapper.o
+TESTNAMES = hello cpphello hello.py stats
+TESTPROGS = $(patsubst %,$(BLDDIR)/%,$(TESTNAMES))
 
 .PHONY: all lib test clean python java
 
@@ -30,10 +32,11 @@ all: lib test python java
 
 lib: $(BLDDIR)/$(LIBNAME)
 
-test: $(BLDDIR)/hello $(BLDDIR)/cpphello $(BLDDIR)/hello.py
+test: $(TESTPROGS)
 	cd $(BLDDIR) && ./hello
 	cd $(BLDDIR) && ./cpphello
 	cd $(BLDDIR) && ./hello.py
+	#cd $(BLDDIR) && ./stats
 
 clean:
 	rm -rf $(BLDDIR)/*
@@ -51,6 +54,9 @@ $(BLDDIR)/$(LIBNAME): $(LIBOBJECTS)
 	$(LD) $(LDFLAGS) -shared -o $@ $^ -lm
 
 $(BLDDIR)/hello: $(TESTDIR)/c/hello.c $(BLDDIR)/$(LIBNAME)
+	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lojrand
+
+$(BLDDIR)/stats: $(TESTDIR)/c/stats.c $(BLDDIR)/$(LIBNAME)
 	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lojrand
 
 $(BLDDIR)/cpphello: $(TESTDIR)/cpp/hello.cc $(BLDDIR)/$(LIBNAME)

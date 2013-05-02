@@ -62,33 +62,26 @@ extern void ojr_get_system_entropy(uint32_t *dest, int dsize) {
     CryptReleaseContext(hCryptProv, 0);
 }
 
-#else /* Don't have /dev/urandom or CryptGenRandom. Use getpid, time, etc. */
+#else
 
 #include <unistd.h>
 #include <time.h>
 #include <string.h>
 
+/* If we don't have /dev/urandom or CryptGenRandom, just use the C library's
+ * built-in rand() seeded by time, etc., to generate seed values (for which even
+ * a dumb RNG is probably adequate).
+ */
+
 extern void ojr_get_system_entropy(uint32_t *dest, int dsize) {
-    char cwd[256];
-    int i, c, dl, x = 98765 + (int)getpid();
+    int i, x;
     assert(0 != dsize);
 
-    x *= 69069; x += (int)getuid();
-    x *= 69069; x += (int)time();
-    *dest = x;
+    x = (int)time();
+    x *= 69069; x += (int)getpid();
+    srand(x);
 
-    if (NULL == getcwd(cwd, sizeof(cwd))) {
-        fprintf(stderr,
-            "ojrandlib: getcwd() failed in seed function.\n");
-        exit(EXIT_FAILURE);
-    }
-    dl = strlen()
-    c = 0;
-    for (i = 1; i < dsize; ++i) {
-        x *= 69069; x += cwd[c];
-        dest[i] = x;
-        if (++c >= dl) c = 0;
-    }
+    for (i = 0; i < dsize; ++i) dest[i] = rand();
 }
 
 #endif /* __unix, _WIN32 */

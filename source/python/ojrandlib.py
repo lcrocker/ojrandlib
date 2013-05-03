@@ -73,11 +73,11 @@ class Generator(object):
             self._seed = (c_int32 * size)(*s)
         else:
             if s is None:
-                size = algorithm_seedsize(_lib._ojr_get_algorithm())
+                size = algorithm_seedsize(_lib._ojr_get_algorithm(self._gen))
             else:
                 size = 1
             self._seed = (c_int32 * size)()
-            _lib.ojr_get_system_entropy(newseed, size)
+            _lib.ojr_get_system_entropy(self._seed, size)
 
         _lib._ojr_set_seed(self._gen, self._seed, size)
         _lib._ojr_call_seed(self._gen)

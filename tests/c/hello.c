@@ -14,7 +14,7 @@
 
 int main(int argc, char *argv[]) {
     int i;
-    ojr_generator *g = ojr_open(0);
+    ojr_generator *g = ojr_open(ojr_algorithm_id("jkiss"));
     ojr_good_seed(g);
 
     for (i = 0; i < 100; ++i) {

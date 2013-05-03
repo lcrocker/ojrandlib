@@ -22,10 +22,13 @@ JAVACFLAGS = -g -Werror
 JPACKAGE = $(subst /,.,$(CLASSDIR))
 
 LIBNAME = libojrand.so
-LIBCNAMES = libmain.c capi.c entropy.c zignor.c jkiss.c mt19937.c
+LIBCNAMES = libmain.c capi.c entropy.c zignor.c
+ALGORITHMS = jkiss.c mt19937.c mwc256.c
+TESTNAMES = hello cpphello hello.py Hello.class stats
+
+LIBCNAMES += $(ALGORITHMS)
 LIBOBJECTS = $(patsubst %.c,$(BLDDIR)/%.o,$(LIBCNAMES))
 LIBOBJECTS += $(BLDDIR)/wrapper.o
-TESTNAMES = hello cpphello hello.py Hello.class stats
 TESTPROGS = $(patsubst %,$(BLDDIR)/%,$(TESTNAMES))
 
 .PHONY: all lib test clean python java
@@ -39,10 +42,10 @@ python: $(BLDDIR)/ojrandlib.py
 java: $(BLDDIR)/$(CLASSDIR)/Generator.class $(BLDDIR)/com_onejoker_randlib_Generator.h
 
 test: $(TESTPROGS)
-	#cd $(BLDDIR) && ./hello
-	#cd $(BLDDIR) && ./cpphello
-	#cd $(BLDDIR) && ./hello.py
-	cd $(BLDDIR) && java -ea -cp "." -Djava.library.path=. Hello
+	cd $(BLDDIR) && ./hello
+	cd $(BLDDIR) && ./cpphello
+	cd $(BLDDIR) && ./hello.py
+	#cd $(BLDDIR) && java -ea -cp "." -Djava.library.path=. Hello
 	#cd $(BLDDIR) && ./stats
 
 clean:
@@ -78,11 +81,11 @@ $(BLDDIR)/ojrandlib.py: $(SRCDIR)/python/ojrandlib.py
 $(BLDDIR)/hello.py: $(TESTDIR)/python/hello.py python
 	cp $< $@
 
-$(BLDDIR)/$(CLASSDIR)/Generator.class: $(SRCDIR)/java/$(CLASSDIR)/Generator.java
+$(BLDDIR)/$(CLASSDIR)/Generator.class: $(SRCDIR)/java/$(CLASSDIR)/Generator.java | $(BLDDIR)/$(CLASSDIR)
 	javac $(JAVACFLAGS) -d $(BLDDIR) $<
 
 $(BLDDIR)/com_onejoker_randlib_Generator.h: $(BLDDIR)/$(CLASSDIR)/Generator.class
-	cd $(BLDDIR) && javah -jni $(JPACKAGE).Generator
+	cd $(BLDDIR) && javah -jni -force $(JPACKAGE).Generator
 
-$(BLDDIR)/Hello.class: $(TESTDIR)/java/Hello.java
+$(BLDDIR)/Hello.class: $(TESTDIR)/java/Hello.java | $(BLDDIR)
 	javac $(JAVACFLAGS) -cp $(BLDDIR) -d $(BLDDIR) $<

@@ -81,11 +81,8 @@ int Generator::seed(uint32_t val) {
 
 void Generator::reseed() {
     uint32_t val = 0xFFFFFFFF;
-    ojr_reseed(this->cg);
-
     ojr_get_system_entropy(&val, 1);
-    if (NULL == this->cg->ap->reseed) ojr_default_reseed(this->cg, val);
-    else _ojr_call_reseed(this->cg, val);
+    _ojr_call_reseed(this->cg, val);
     this->cg->_status = 0xb1e55ed3;
 }
 

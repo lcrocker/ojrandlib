@@ -9,8 +9,6 @@
 
 package com.onejoker.randlib;
 import java.nio.*;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 public class Generator {
     private ByteBuffer mS, mState, mBuf, mSeed = null;
@@ -58,10 +56,10 @@ public class Generator {
         else nSetStatus(b, 0xb1e55ed2);
     }
 
-    public void seed(ArrayList<Integer> s) {
-        ByteBuffer b = ByteBuffer.allocateDirect(4 * s.size());
+    public void seed(int[] s) {
+        ByteBuffer b = ByteBuffer.allocateDirect(4 * s.length);
         b.order(ByteOrder.LITTLE_ENDIAN);
-        for (int i = 0; i < s.size(); ++i) { b.putInt(4 * i, s.get(i)); }
+        for (int i = 0; i < s.length; ++i) { b.putInt(4 * i, s[i]); }
         Generator._seed(mS, b);
     }
 
@@ -78,6 +76,35 @@ public class Generator {
         nGetSystemEntropy(b, s);
         Generator._seed(mS, b);
     }
+
+    public void reseed() {
+        ByteBuffer b = Generator.getSystemEntropy(1);
+        b.order(ByteOrder.LITTLE_ENDIAN);
+        int v = b.getInt(0);
+        nCallReseed(mS, v);
+        nSetStatus(mS, 0xb1e55ed3);
+    }
+
+    public int[] getSeed() {
+        if (null == mSeed) return null;
+        mSeed.order(ByteOrder.LITTLE_ENDIAN);
+        int[] r = new int[mSeedSize];
+        for (int i = 0; i < mSeedSize; ++i) { r[i] = mSeed.getInt(4 * i); }
+        return r;
+    }
+
+    public int getAlgorithm() { return mAlgorithm; }
+
+    public int next16() { return nNext16(mS); }
+    public int next32() { return nNext32(mS); }
+    public long next64() { return nNext64(mS); }
+
+    public double nextDouble() { return nNextDouble(mS); }
+    public double nextSignedDouble() { return nNextSignedDouble(mS); }
+    public double nextGaussian() { return nNextGaussian(mS); }
+
+    public int rand(int limit) { return nRand(mS, limit); }
+    public void discard(int count) { nDiscard(mS, count); }
 
     private static native int nStructSize();
     private static native void nInit(ByteBuffer b);

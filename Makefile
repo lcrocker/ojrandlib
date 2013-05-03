@@ -6,18 +6,20 @@
 
 ROOT := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 SRCDIR = $(ROOT)/source
-BLDDIR = $(ROOT)/build
 TESTDIR = $(ROOT)/tests
+BLDDIR = $(ROOT)/build
+CLASSDIR = com/onejoker/randlib
 
 CC = gcc
-CFLAGS = -g -DDEBUG -Wall -fpic
-# CFLAGS = -O3 -DNDEBUG -Wall -fpic
+CFLAGS = -g -DDEBUG -Wall -Werror -fpic
+# CFLAGS = -O3 -DNDEBUG -Wall -Werror -fpic
 CXX = g++
 CXXFLAGS = $(CFLAGS)
 LD = g++
 LDFLAGS =
 JAVACFLAGS = -g -Werror
 # JAVACFLAGS = -g:none
+JPACKAGE = $(subst /,.,$(CLASSDIR))
 
 LIBNAME = libojrand.so
 LIBCNAMES = libmain.c capi.c entropy.c zignor.c jkiss.c mt19937.c
@@ -28,9 +30,14 @@ TESTPROGS = $(patsubst %,$(BLDDIR)/%,$(TESTNAMES))
 
 .PHONY: all lib test clean python java
 
-all: lib test python java
+# all: lib python java test
+all: lib python java
 
 lib: $(BLDDIR)/$(LIBNAME)
+
+python: $(BLDDIR)/ojrandlib.py
+
+java: $(BLDDIR)/$(CLASSDIR)/Generator.class $(BLDDIR)/com_onejoker_randlib_Generator.h
 
 test: $(TESTPROGS)
 	cd $(BLDDIR) && ./hello
@@ -43,6 +50,9 @@ clean:
 
 $(BLDDIR):
 	mkdir -p $(BLDDIR)
+
+$(BLDDIR)/$(CLASSDIR):
+	mkdir -p $(BLDDIR)/$(CLASSDIR)
 
 $(BLDDIR)/wrapper.o: $(SRCDIR)/library/wrapper.cc $(SRCDIR)/library/ojrandlib.h | $(BLDDIR)
 	$(CXX) $(CXXFLAGS) -c -I$(SRCDIR)/library -o $@ $<
@@ -62,10 +72,14 @@ $(BLDDIR)/stats: $(TESTDIR)/c/stats.c $(BLDDIR)/$(LIBNAME)
 $(BLDDIR)/cpphello: $(TESTDIR)/cpp/hello.cc $(BLDDIR)/$(LIBNAME)
 	$(CXX) $(CXXFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lojrand
 
-python: $(BLDDIR)/ojrandlib.py
-
 $(BLDDIR)/ojrandlib.py: $(SRCDIR)/python/ojrandlib.py
 	cp $< $@
 
 $(BLDDIR)/hello.py: $(TESTDIR)/python/hello.py python
 	cp $< $@
+
+$(BLDDIR)/$(CLASSDIR)/Generator.class: $(SRCDIR)/java/$(CLASSDIR)/Generator.java
+	javac $(JAVACFLAGS) -d $(BLDDIR) $<
+
+$(BLDDIR)/com_onejoker_randlib_Generator.h: $(BLDDIR)/$(CLASSDIR)/Generator.class
+	cd $(BLDDIR) && javah -jni $(JPACKAGE).Generator

@@ -20,10 +20,12 @@
 
 extern ojr_algorithm ojr_algorithm_jkiss;
 extern ojr_algorithm ojr_algorithm_mt19937;
+extern ojr_algorithm ojr_algorithm_mwc256;
 
 ojr_algorithm *_ojr_algorithms[] = {
     &ojr_algorithm_jkiss,
     &ojr_algorithm_mt19937,
+    &ojr_algorithm_mwc256,
     NULL,
 };
 

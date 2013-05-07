@@ -4,9 +4,7 @@
  * copyright and related or neighboring rights to this work.
  * <http://creativecommons.org/publicdomain/zero/1.0/>
  *
- * The simple C API uses open / close to create generator objects. These
- * allocate memory with malloc(), so they are generally not used by the
- * higher level language bindings.
+ * Basic C API functions.
  */
 
 #include <stdlib.h>
@@ -17,26 +15,29 @@
 
 #include "ojrandlib.h"
 
-ojr_generator *ojr_open(int id) {
-    ojr_algorithm *ap;
+
+// Create a new generator
+ojr_generator *ojr_open(const char *name) {
+    int id = ojr_algorithm_id(name);
+    int statesize = ojr_algorithm_statesize(id);
+    int bufsize = ojr_algorithm_bufsize(id);
     ojr_generator *gp;
     uint32_t *sp, *bp;
 
-    if (0 == id) id = 1;
-    if (id > ojr_algorithm_count()) return NULL;
-    ap = _ojr_algorithms[id - 1];
-
     gp = malloc(sizeof(ojr_generator));
     if (gp) {
-        sp = calloc(ap->statesize, 4);
+        sp = calloc(statesize, 4);
         if (sp) {
-            bp = calloc(ap->bufsize, 4);
+            bp = calloc(bufsize, 4);
             if (bp) {
-                _ojr_init(gp);
-                _ojr_set_algorithm(gp, id);
-                _ojr_set_state(gp, sp, ap->statesize);
-                _ojr_set_buffer(gp, bp, ap->bufsize);
-                _ojr_call_open(gp);
+                ojr_init(gp);
+                gp->next = ojr_genlist_head;
+                ojr_genlist_head = gp;
+
+                ojr_set_algorithm(gp, id);
+                ojr_set_state(gp, sp, statesize);
+                ojr_set_buffer(gp, bp, bufsize);
+                ojr_call_open(gp);
                 return gp;
             }
             free(sp);
@@ -46,83 +47,162 @@ ojr_generator *ojr_open(int id) {
     return NULL;
 }
 
-/* We're done with this generator. Free up allocated memory.
- */
-
+// We're done with this generator, free up allocated memory
 void ojr_close(ojr_generator *g) {
-    assert(0xb1e55ed0 == (g->_status & 0xfffffff0));
+    ojr_generator **p;
+    assert(0x5eed1e55 == g->init);
     assert(g->state && g->buf);
+    assert(NULL != ojr_genlist_head);
 
-    _ojr_call_close(g);
-    if (g->seed) free(g->seed);
+    ojr_call_close(g);
+
+    p = &ojr_genlist_head;
+    while (*p != g) p = &((*p)->next);
+    *p = g->next;
+
     free(g->buf);
     free(g->state);
     free(g);
 }
 
-/* Common code for seed & reseed functions. Create the seed buffer in the
- * generator object, fill it from the passed-in values. The API is a little
- * weird: if <byval> is true, then <size> is an integer seed. If <seed> is
- * NULL, then we want to use system entropy: <size> words, or if <size> is 0,
- * use the algorithm's recommended seed size. Finally, only if <seed> and
- * <size> are both set do we use them as is.
+void ojr_array_seed(ojr_generator *g, uint32_t *seed, int size) {
+    assert(0x5eed1e55 == g->init);
+    g->bptr = g->buf;
+
+    ojr_call_seed(g, seed, size);
+    ojr_set_seeded(g, 1);
+}
+
+void ojr_int_seed(ojr_generator *g, int value) {
+    ojr_array_seed(g, (uint32_t *)(&value), 1);
+}
+
+void ojr_system_seed(ojr_generator *g) {
+    uint32_t *seed;
+    int id = ojr_get_algorithm(g);
+    int size = ojr_algorithm_seedsize(id);
+
+    if (! (seed = malloc(4 * size))) return;
+    ojr_get_system_entropy(seed, size);
+
+    ojr_array_seed(g, seed, size);
+    free(seed);
+}
+
+void ojr_reseed(ojr_generator *g, uint32_t *seed, int size) {
+    assert(0x5eed1e55 == g->init);
+    assert(ojr_get_seeded(g));
+    ojr_call_reseed(g, seed, size);
+}
+
+/* Return next 32, 16, or 64 random bits from buffer. Buffer is typed as
+ * array of 32-bit words, so that's the default on which the others are based.
  */
 
-static int _ojr_new_seed(ojr_generator *g, uint32_t *seed, int size, int byval) {
-    uint32_t *sp;
-    int first = (NULL == g->seed);
+uint32_t ojr_next32(ojr_generator *g) {
+    if (NULL == g) g = &ojr_default_generator;
+    else { assert(0x5eed1e55 == g->init); }
 
-    if (byval) {
-        if (! (seed = malloc(4))) return 0;
-        *seed = size;
-        size = 1;
-    } else {
-        if (NULL == seed && 0 == size) { size = g->ap->seedsize; }
+    if (g->bptr == g->buf) {
+        ojr_call_refill(g);
+        g->bptr = g->buf + g->bufsize;
     }
-    if (! (sp = malloc(4 * size))) return 0;
-    if (! first) { free(g->seed); }
-
-    if (NULL == seed) ojr_get_system_entropy(sp, size);
-    else memmove(sp, seed, 4 * size);
-    _ojr_set_seed(g, sp, size);
-
-    if (first) g->_status = 0xb1e55ed2;
-    else g->_status = 0xb1e55ed3;
-    return 1;
+    return *--g->bptr;
 }
 
-int ojr_int_seed(ojr_generator *g, int value) {
-    assert(0xb1e55ed0 == (g->_status & 0xfffffff0));
-    if (! _ojr_new_seed(g, NULL, value, 1)) return 0;
-    _ojr_call_seed(g);
-    return g->seedsize;
+uint16_t ojr_next16(ojr_generator *g) {
+    uint16_t r16;
+    if (NULL == g) g = &ojr_default_generator;
+    else { assert(0x5eed1e55 == g->init); }
+
+    if (g->leftover) {
+        r16 = g->leftover & 0xFFFF;
+        g->leftover = 0;
+        return r16;
+    }
+    if (g->bptr == g->buf) {
+        ojr_call_refill(g);
+        g->bptr = g->buf + g->bufsize;
+    }
+    --g->bptr;
+
+    g->leftover = 0x10000 | *((uint16_t *)(g->bptr) + 1);
+    return *((uint16_t *)(g->bptr));
 }
 
-int ojr_good_seed(ojr_generator *g) {
-    assert(0xb1e55ed0 == (g->_status & 0xfffffff0));
-    if (! _ojr_new_seed(g, NULL, 0, 0)) return 0;
-    _ojr_call_seed(g);
-    return g->seedsize;
+uint64_t ojr_next64(ojr_generator *g) {
+    uint64_t r64;
+
+    r64 = (uint64_t)ojr_next32(g);
+    return (r64 << 32) | ojr_next32(g);
 }
 
-int ojr_array_seed(ojr_generator *g, uint32_t *seed, int size) {
-    assert(0xb1e55ed0 == (g->_status & 0xfffffff0));
-    assert(0 != size && 0 != seed);
+// Return double in range [0,1).
+double ojr_next_double(ojr_generator *g) {
+    uint64_t r64;
 
-    if (! _ojr_new_seed(g, seed, size, 0)) return 0;
-    _ojr_call_seed(g);
-    return g->seedsize;
+    r64 = (ojr_next64(g) >> 12) | 0x3FF0000000000000;
+    return *(double *)(&r64) - 1.0;
 }
 
-void ojr_reseed(ojr_generator *g) {
-    uint32_t s;
-    assert(0xb1e55ed2 == (g->_status & 0xfffffff2));
+// Return double in range (-1,1).
+double ojr_next_signed_double(ojr_generator *g) {
+    int sign;
+    uint64_t r64;
 
-    ojr_get_system_entropy(&s, 1);
-    if (NULL == g->ap->reseed) ojr_default_reseed(g, s);
-    else _ojr_call_reseed(g, s);
+    do {
+        r64 = ojr_next64(g);
+        sign = (int)r64 & 1;
+        r64 >>= 12;
+    } while (sign && 0LL == r64);
 
-    _ojr_call_refill(g);
+    r64 |= 0x3FF0000000000000;
+    if (sign) return 1.0 - *(double *)(&r64);
+    else return *(double *)(&r64) - 1.0;
+}
+
+/* Return a well-balanced random integer from 0 to limit-1. Limited to 16 bits
+ * for performance, because this kind of function is generally used to select
+ * from among a smaller sample of things, like cards in a deck.
+ */
+int ojr_rand(ojr_generator *g, int limit) {
+    int v, m = limit - 1;
+    assert(limit > 0 && limit <= 0x80000);
+
+    m |= m >> 1;
+    m |= m >> 2;
+    m |= m >> 4;
+    m |= m >> 8;
+    /* m |= m >> 16; Uncomment this if you change to 32 bits */
+    /* m |= m >> 32; Uncomment this if you change to 64 bits */
+
+    do {
+        v = ojr_next16(g) & m;
+    } while (v >= limit);
+    return v;
+}
+
+// Skip over <count> values of the generator without returning them.
+void ojr_discard(ojr_generator *g, int count) {
+    int inbuf = g->bptr - g->buf;
+    if (NULL == g) g = &ojr_default_generator;
+    else { assert(0x5eed1e55 == g->init); }
+
+    g->leftover = 0;
+    if (count <= inbuf) {
+        g->bptr -= count;
+        return;
+    }
+    count -= inbuf;
     g->bptr = g->buf + g->bufsize;
-    g->_status = 0xb1e55ed3;
+
+    do {
+        ojr_call_refill(g);
+        if (count <= g->bufsize) {
+            g->bptr -= count;
+            count = 0;
+        } else {
+            count -= g->bufsize;
+        }
+    } while (count);
 }

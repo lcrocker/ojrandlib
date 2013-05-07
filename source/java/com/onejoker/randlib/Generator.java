@@ -14,7 +14,6 @@ public class Generator {
     private ByteBuffer mS, mState, mBuf, mSeed = null;
     private static int mStructSize;
     static { mStructSize = nStructSize(); }
-    private int mStateSize, mBufSize, mSeedSize, mAlgorithm;
 
     public static int algorithmCount() { return nAlgorithmCount(); }
     public static int algorithmID(String name) { return nAlgorithmID(name); }
@@ -31,70 +30,51 @@ public class Generator {
 
     public Generator(int id) {
         mS = ByteBuffer.allocateDirect(mStructSize);
-        mAlgorithm = id;
         nInit(mS);
-        nSetAlgorithm(mS, mAlgorithm);
+        nSetAlgorithm(mS, id);
 
-        this.mStateSize = nAlgorithmStateSize(id);
-        this.mState = ByteBuffer.allocateDirect(4 * mStateSize);
-        nSetState(mS, mState, mStateSize);
+        int s = nAlgorithmStateSize(id);
+        this.mState = ByteBuffer.allocateDirect(4 * s);
+        nSetState(mS, mState, s);
 
-        this.mBufSize = nAlgorithmBufSize(id);
-        this.mBuf = ByteBuffer.allocateDirect(4 * mBufSize);
-        nSetBuf(mS, mBuf, mBufSize);
+        s = nAlgorithmBufSize(id);
+        this.mBuf = ByteBuffer.allocateDirect(4 * s);
+        nSetBuf(mS, mBuf, s);
         nCallOpen(mS);
     }
     public Generator(String name) { this(Generator.algorithmID(name)); }
     public Generator() { this(1); }
 
-    public static void _seed(ByteBuffer b, ByteBuffer s) {
-        boolean first = (0xb1e55ed0 == nGetStatus(b));
-        nSetSeed(b, s, (b.capacity() / 4));
-        nCallSeed(b);
-
-        if (first) nSetStatus(b, 0xb1e55ed2);
-        else nSetStatus(b, 0xb1e55ed2);
-    }
-
     public void seed(int[] s) {
         ByteBuffer b = ByteBuffer.allocateDirect(4 * s.length);
         b.order(ByteOrder.LITTLE_ENDIAN);
         for (int i = 0; i < s.length; ++i) { b.putInt(4 * i, s[i]); }
-        Generator._seed(mS, b);
+        nCallSeed(mS, b, s.length);
+        nSetSeeded(mS, 1);
     }
 
     public void seed(int s) {
         ByteBuffer b = ByteBuffer.allocateDirect(4);
         b.order(ByteOrder.LITTLE_ENDIAN);
         b.putInt(0, s);
-        Generator._seed(mS, b);
+        nCallSeed(mS, b, 1);
+        nSetSeeded(mS, 1);
     }
 
     public void seed() {
-        int s = nAlgorithmSeedSize(mAlgorithm);
+        int s = nAlgorithmSeedSize(nGetAlgorithm(mS));
         ByteBuffer b = ByteBuffer.allocateDirect(4 * s);
         nGetSystemEntropy(b, s);
-        Generator._seed(mS, b);
+        nCallSeed(mS, b, s);
+        nSetSeeded(mS, 1);
     }
 
     public void reseed() {
-        ByteBuffer b = Generator.getSystemEntropy(1);
-        b.order(ByteOrder.LITTLE_ENDIAN);
-        int v = b.getInt(0);
-        nCallReseed(mS, v);
-        nSetStatus(mS, 0xb1e55ed3);
+        int s = nAlgorithmSeedSize(nGetAlgorithm(mS));
+        ByteBuffer b = ByteBuffer.allocateDirect(4 * s);
+        nGetSystemEntropy(b, s);
+        nCallReseed(mS, b, s);
     }
-
-    public int[] getSeed() {
-        if (null == mSeed) return null;
-        mSeed.order(ByteOrder.LITTLE_ENDIAN);
-        int[] r = new int[mSeedSize];
-        for (int i = 0; i < mSeedSize; ++i) { r[i] = mSeed.getInt(4 * i); }
-        return r;
-    }
-
-    public int getAlgorithm() { return mAlgorithm; }
-
     public int next16() { return nNext16(mS); }
     public int next32() { return nNext32(mS); }
     public long next64() { return nNext64(mS); }
@@ -116,19 +96,17 @@ public class Generator {
     private static native int nAlgorithmBufSize(int id);
     private static native void nGetSystemEntropy(ByteBuffer b, int count);
 
-    private static native int nGetStatus(ByteBuffer b);
-    private static native void nSetStatus(ByteBuffer b, int s);
-    private static native void nSetSeed(ByteBuffer b, ByteBuffer s, int size);
+    private static native int nSetSeeded(ByteBuffer b, int s);
+    private static native int nGetAlgorithm(ByteBuffer b);
+    private static native void nSetAlgorithm(ByteBuffer b, int id);
     private static native void nSetState(ByteBuffer b, ByteBuffer s, int size);
     private static native void nSetBuf(ByteBuffer b, ByteBuffer buf, int size);
-    private static native void nSetAlgorithm(ByteBuffer b, int id);
 
     private static native void nCallOpen(ByteBuffer b);
     private static native void nCallClose(ByteBuffer b);
-    private static native void nCallSeed(ByteBuffer b);
-    private static native void nCallReseed(ByteBuffer b, int v);
+    private static native void nCallSeed(ByteBuffer b, ByteBuffer s, int c);
+    private static native void nCallReseed(ByteBuffer b, ByteBuffer s, int c);
     private static native void nCallRefill(ByteBuffer b);
-    private static native void nDefaultReseed(ByteBuffer b, int s);
 
     private static native int nNext16(ByteBuffer b);
     private static native int nNext32(ByteBuffer b);

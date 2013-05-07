@@ -51,16 +51,14 @@
 #define UPPER_MASK 0x80000000UL /* most significant w-r bits */
 #define LOWER_MASK 0x7fffffffUL /* least significant r bits */
 
-static void _ojr_mt19937_seed(ojr_generator *g) {
+static void _ojr_mt19937_seed(ojr_generator *g, uint32_t *seed, int size) {
     int i, j, k;
     uint32_t *mt = g->state;
     assert(624 == g->statesize);
 
-    if (1 == g->seedsize) {
-        mt[0]= g->seed[0];
-    } else {
-        mt[0] = 19650218U;
-    }
+    if (1 == size) mt[0]= seed[0];
+    else mt[0] = 19650218U;
+
     for (i = 1; i < N; ++i) {
         mt[i] = (1812433253U * (mt[i - 1] ^ (mt[i - 1] >> 30)) + i);
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
@@ -68,17 +66,18 @@ static void _ojr_mt19937_seed(ojr_generator *g) {
         /* only MSBs of the array mt[].                        */
         /* 2002/01/09 modified by Makoto Matsumoto             */
     }
-    if (1 == g->seedsize) return;
+    g->bptr = g->buf;
+    if (1 == size) return;
 
     i = 1; j = 0;
-    k = (N > g->seedsize) ? N : g->seedsize;
+    k = (N > size) ? N : size;
     while (k) {
         mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >> 30)) * 1664525U))
-          + g->seed[j] + j; /* non linear */
+          + seed[j] + j; /* non linear */
 
         ++i; ++j;
         if (i >= N) { mt[0] = mt[N - 1]; i = 1; }
-        if (j >= g->seedsize) j = 0;
+        if (j >= size) j = 0;
         --k;
     }
     for (k = N - 1; k > 0; --k) {
@@ -90,10 +89,8 @@ static void _ojr_mt19937_seed(ojr_generator *g) {
     mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */
 }
 
-static void _ojr_mt19937_reseed(ojr_generator *g, int value) {
-    assert(624 == g->statesize);
-    ojr_default_reseed(g, value);
-    g->state[4] = g->state[0];
+static void _ojr_mt19937_reseed(ojr_generator *g, uint32_t *seed, int size) {
+    ojr_default_reseed(g, seed, size);
     g->state[0] = 0x80000000UL;
 }
 

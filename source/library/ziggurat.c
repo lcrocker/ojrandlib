@@ -23,11 +23,6 @@
 #define ZIGNOR_R 3.442619855899
 #define ZIGNOR_V 9.91256303526217e-3
 
-static union {
-    double d;
-    uint64_t i;
-} ieee;
-
 static double s_adZigX[ZIGNOR_C + 1], s_adZigR[ZIGNOR_C];
 static int _zignor_table_initialized = 0;
 
@@ -76,8 +71,8 @@ double ojr_next_gaussian(ojr_generator *g) {
             r64 >>= 12;
         } while (sign && 0LL == r64);
 
-        ieee.i = r64 | 0x3FF0000000000000;
-        a = ieee.d - 1.0;
+        r64 |= 0x3FF0000000000000;
+        a = *(double *)(&r64) - 1.0;
         u = sign ? -a : a;
 
         if (a < s_adZigR[i]) return u * s_adZigX[i];

@@ -81,27 +81,27 @@ JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nGetSystemEntropy
 
 /*
  * Class:     com_onejoker_randlib_Generator
- * Method:    nGetStatus
- * Signature: (Ljava/nio/ByteBuffer;)I
+ * Method:    nSetSeeded
+ * Signature: (Ljava/nio/ByteBuffer;I)I
  */
-JNIEXPORT jint JNICALL Java_com_onejoker_randlib_Generator_nGetStatus
-  (JNIEnv *, jclass, jobject);
-
-/*
- * Class:     com_onejoker_randlib_Generator
- * Method:    nSetStatus
- * Signature: (Ljava/nio/ByteBuffer;I)V
- */
-JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nSetStatus
+JNIEXPORT jint JNICALL Java_com_onejoker_randlib_Generator_nSetSeeded
   (JNIEnv *, jclass, jobject, jint);
 
 /*
  * Class:     com_onejoker_randlib_Generator
- * Method:    nSetSeed
- * Signature: (Ljava/nio/ByteBuffer;Ljava/nio/ByteBuffer;I)V
+ * Method:    nGetAlgorithm
+ * Signature: (Ljava/nio/ByteBuffer;)I
  */
-JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nSetSeed
-  (JNIEnv *, jclass, jobject, jobject, jint);
+JNIEXPORT jint JNICALL Java_com_onejoker_randlib_Generator_nGetAlgorithm
+  (JNIEnv *, jclass, jobject);
+
+/*
+ * Class:     com_onejoker_randlib_Generator
+ * Method:    nSetAlgorithm
+ * Signature: (Ljava/nio/ByteBuffer;I)V
+ */
+JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nSetAlgorithm
+  (JNIEnv *, jclass, jobject, jint);
 
 /*
  * Class:     com_onejoker_randlib_Generator
@@ -118,14 +118,6 @@ JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nSetState
  */
 JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nSetBuf
   (JNIEnv *, jclass, jobject, jobject, jint);
-
-/*
- * Class:     com_onejoker_randlib_Generator
- * Method:    nSetAlgorithm
- * Signature: (Ljava/nio/ByteBuffer;I)V
- */
-JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nSetAlgorithm
-  (JNIEnv *, jclass, jobject, jint);
 
 /*
  * Class:     com_onejoker_randlib_Generator
@@ -146,18 +138,18 @@ JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nCallClose
 /*
  * Class:     com_onejoker_randlib_Generator
  * Method:    nCallSeed
- * Signature: (Ljava/nio/ByteBuffer;)V
+ * Signature: (Ljava/nio/ByteBuffer;Ljava/nio/ByteBuffer;I)V
  */
 JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nCallSeed
-  (JNIEnv *, jclass, jobject);
+  (JNIEnv *, jclass, jobject, jobject, jint);
 
 /*
  * Class:     com_onejoker_randlib_Generator
  * Method:    nCallReseed
- * Signature: (Ljava/nio/ByteBuffer;I)V
+ * Signature: (Ljava/nio/ByteBuffer;Ljava/nio/ByteBuffer;I)V
  */
 JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nCallReseed
-  (JNIEnv *, jclass, jobject, jint);
+  (JNIEnv *, jclass, jobject, jobject, jint);
 
 /*
  * Class:     com_onejoker_randlib_Generator
@@ -166,14 +158,6 @@ JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nCallReseed
  */
 JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nCallRefill
   (JNIEnv *, jclass, jobject);
-
-/*
- * Class:     com_onejoker_randlib_Generator
- * Method:    nDefaultReseed
- * Signature: (Ljava/nio/ByteBuffer;I)V
- */
-JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nDefaultReseed
-  (JNIEnv *, jclass, jobject, jint);
 
 /*
  * Class:     com_onejoker_randlib_Generator

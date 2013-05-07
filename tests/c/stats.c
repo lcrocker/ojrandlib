@@ -24,18 +24,18 @@ typedef struct {
     long *counts;
 } counter;
 
-/* Stirling's approximation of the Gamma function.
+/* Gosper's more accurate version of Stirling's approximation.
  */
 
 static const double ONE_OVER_E = 0.3678794411714423;
 static const double TWO_PI = 6.2831853071795864;
+static const double PI_OVER_3 = 1.0471975511965976;
 
-static double stirling(double z) {
-    double d = 1.0 / (10.0 * z);
-    d = 1.0 / ((12 * z) - d);
-    d = (d + z) * ONE_OVER_E;
-    d = pow(d, z);
-    return d * sqrt(TWO_PI / z);
+static double gosper(double z) {
+    double d;
+    z -= 1.0;
+    d = sqrt(TWO_PI * z + PI_OVER_3);
+    return d * pow(z * ONE_OVER_E, z);
 }
 
 /* Incomplete gamma function.
@@ -73,7 +73,7 @@ static double chi2p(int df, double cv) {
     p = igf(k, x);
     if (isnan(p) || isinf(p) || p <= 1e-8) return 1e-14;
 
-    p /= stirling(k);
+    p /= gosper(k);
     return 1.0 - p;
 }
 
@@ -134,8 +134,9 @@ double counter_print_stats(counter *c) {
     return p;
 }
 
-int main(int argc, char *argv[]) {
+double balance() {
     int i, r;
+    double p;
     counter *c = counter_open(52, 0.0, 52.0);
     ojr_generator *g = ojr_open(0);
 
@@ -145,9 +146,14 @@ int main(int argc, char *argv[]) {
         r = ojr_rand(g, 52);
         counter_inc_b(c, r);
     }
-    counter_print_stats(c);
+    p = counter_print_stats(c);
 
     ojr_close(g);
     counter_close(c);
+    return p;
+}
+
+int main(int argc, char *argv[]) {
+    printf("%g %g\n", gosper(3.0), gosper(4.0));
     return EXIT_SUCCESS;
 }

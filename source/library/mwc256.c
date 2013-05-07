@@ -14,8 +14,8 @@
 
 #include "ojrandlib.h"
 
-static void _ojr_mwc256_seed(ojr_generator *g) {
-    ojr_default_seed(g);
+static void _ojr_mwc256_seed(ojr_generator *g, uint32_t *seed, int size) {
+    ojr_default_seed(g, seed, size);
     g->state[256] = 362436;
 }
 
@@ -35,7 +35,7 @@ static void _ojr_mwc256_refill(ojr_generator *g) {
 
 ojr_algorithm ojr_algorithm_mwc256 = {
     "mwc256",
-    4, 257, 256,
+    16, 257, 256,
     NULL, NULL,
     _ojr_mwc256_seed,
     NULL,

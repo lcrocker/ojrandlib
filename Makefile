@@ -11,24 +11,26 @@ BLDDIR = $(ROOT)/build
 CLASSDIR = com/onejoker/randlib
 
 CC = gcc
-CFLAGS = -g -DDEBUG -Wall -Werror -fpic
-# CFLAGS = -O3 -DNDEBUG -Wall -Werror -fpic
+CFLAGS = -g -DDEBUG -Wall -std=c99 -pedantic -fpic
+# CFLAGS = -O3 -DNDEBUG -Wall -std=c99 -pedantic -fpic
 CXX = g++
-CXXFLAGS = $(CFLAGS)
+CXXFLAGS = -g -DDEBUG -Wall -std=c++98 -pedantic -fpic
 LD = g++
-LDFLAGS =
+LDFLAGS = -nostartfiles
+
+JAVA_HOME ?= /usr/java
 JAVACFLAGS = -g -Werror
 # JAVACFLAGS = -g:none
 JPACKAGE = $(subst /,.,$(CLASSDIR))
 
 LIBNAME = libojrand.so
-LIBCNAMES = libmain.c capi.c entropy.c zignor.c
-ALGORITHMS = jkiss.c mt19937.c mwc256.c
-TESTNAMES = hello cpphello hello.py Hello.class stats
+LIBCNAMES = init.c generator.c capi.c entropy.c ziggurat.c
+ALGORITHMS = algorithms.c jkiss.c mt19937.c mwc256.c
+TESTNAMES = hello cpphello hello.py Hello.class functions
 
 LIBCNAMES += $(ALGORITHMS)
 LIBOBJECTS = $(patsubst %.c,$(BLDDIR)/%.o,$(LIBCNAMES))
-LIBOBJECTS += $(BLDDIR)/wrapper.o
+LIBOBJECTS += $(BLDDIR)/wrapper.o $(BLDDIR)/jniGenerator.o
 TESTPROGS = $(patsubst %,$(BLDDIR)/%,$(TESTNAMES))
 
 .PHONY: all lib test clean python java
@@ -45,8 +47,8 @@ test: $(TESTPROGS)
 	cd $(BLDDIR) && ./hello
 	cd $(BLDDIR) && ./cpphello
 	cd $(BLDDIR) && ./hello.py
-	#cd $(BLDDIR) && java -ea -cp "." -Djava.library.path=. Hello
-	#cd $(BLDDIR) && ./stats
+	cd $(BLDDIR) && java -ea -cp "." -Djava.library.path=$(BLDDIR) Hello
+	cd $(BLDDIR) && ./functions
 
 clean:
 	rm -rf $(BLDDIR)/*
@@ -60,6 +62,9 @@ $(BLDDIR)/$(CLASSDIR):
 $(BLDDIR)/wrapper.o: $(SRCDIR)/library/wrapper.cc $(SRCDIR)/library/ojrandlib.h | $(BLDDIR)
 	$(CXX) $(CXXFLAGS) -c -I$(SRCDIR)/library -o $@ $<
 
+$(BLDDIR)/jniGenerator.o: $(SRCDIR)/java/$(CLASSDIR)/jniGenerator.c $(SRCDIR)/library/ojrandlib.h | $(BLDDIR)
+	$(CC) $(CFLAGS) -c -I$(JAVA_HOME)/include -I$(SRCDIR)/library -o $@ $<
+
 $(BLDDIR)/%.o: $(SRCDIR)/library/%.c $(SRCDIR)/library/ojrandlib.h | $(BLDDIR)
 	$(CC) $(CFLAGS) -c -I$(SRCDIR)/library -o $@ $<
 
@@ -69,8 +74,8 @@ $(BLDDIR)/$(LIBNAME): $(LIBOBJECTS)
 $(BLDDIR)/hello: $(TESTDIR)/c/hello.c $(BLDDIR)/$(LIBNAME)
 	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lojrand
 
-$(BLDDIR)/stats: $(TESTDIR)/c/stats.c $(BLDDIR)/$(LIBNAME)
-	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lojrand
+$(BLDDIR)/functions: $(TESTDIR)/c/functions.c $(TESTDIR)/c/stats.* $(BLDDIR)/$(LIBNAME)
+	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(TESTDIR)/c -I$(SRCDIR)/library -o $@ $< -lm -lojrand
 
 $(BLDDIR)/cpphello: $(TESTDIR)/cpp/hello.cc $(BLDDIR)/$(LIBNAME)
 	$(CXX) $(CXXFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lojrand

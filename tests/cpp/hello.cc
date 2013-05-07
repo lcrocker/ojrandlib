@@ -4,11 +4,10 @@
  * copyright and related or neighboring rights to this work.
  * <http://creativecommons.org/publicdomain/zero/1.0/>
  *
- * Basic test for pseudo-random number generator.
+ * Basic C++ usage example for pseudo-random number generator.
  */
 
-#include <cstdlib>
-#include <cstdio>
+#include <iostream>
 using namespace std;
 
 #include "ojrandlib.h"
@@ -21,9 +20,8 @@ int main(int argc, char *argv[]) {
     Generator g("mt19937");
     g.seed(s);
 
-    for (int i = 0; i < 100; ++i) {
-        printf("%10u ", g.next32());
-        if (4 == (i % 5)) printf("\n");
-    }
-    return EXIT_SUCCESS;
+    cout << "  " << g.rand(100) << "  " << g.next16()     <<
+            "  " << g.next32()  << "  " << g.nextDouble() << "\n";
+
+    return 0;
 }

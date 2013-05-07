@@ -49,72 +49,64 @@ class Generator(object):
         if 0 == id:
             id = 1
 
-        self._seed = None
-        self._gen = create_string_buffer(_lib._ojr_structure_size())
-        _lib._ojr_init(self._gen)
-        _lib._ojr_set_algorithm(self._gen, id)
+        self.gen = create_string_buffer(_lib.ojr_structure_size())
+        _lib.ojr_init(self.gen)
+        _lib.ojr_set_algorithm(self.gen, id)
 
         ss = algorithm_statesize(id)
-        self._state = (c_int32 * ss)()
-        _lib._ojr_set_state(self._gen, self._state, ss);
+        self.state = (c_int32 * ss)()
+        _lib.ojr_set_state(self.gen, self.state, ss);
 
         bs = algorithm_bufsize(id)
-        self._buf = (c_int32 * bs)()
-        _lib._ojr_set_buffer(self._gen, self._buf, bs);
-        _lib._ojr_call_open(self._gen)
+        self.buf = (c_int32 * bs)()
+        _lib.ojr_set_buffer(self.gen, self.buf, bs);
+        _lib.ojr_call_open(self.gen)
 
     def __del__(self):
-        _lib._ojr_call_close(self._gen)
+        _lib.ojr_call_close(self.gen)
 
     def seed(self, s = None):
-        first = (self._seed is None)
-        if (s is not None) and hasattr(s, "__len__"):
-            size = len(s)
-            self._seed = (c_int32 * size)(*s)
+        if s is None:
+            size = algorithm_seedsize(_lib.ojr_get_algorithm(self.gen))
+            seed = (c_int32 * size)()
+            _lib.ojr_get_system_entropy(seed, size)
         else:
-            if s is None:
-                size = algorithm_seedsize(_lib._ojr_get_algorithm(self._gen))
+            if hasattr(s, "__len__"):
+                size = len(s)
+                seed = (c_int32 * size)(*s)
             else:
                 size = 1
-            self._seed = (c_int32 * size)()
-            _lib.ojr_get_system_entropy(self._seed, size)
+                seed = (c_int32 * size)([s])
 
-        _lib._ojr_set_seed(self._gen, self._seed, size)
-        _lib._ojr_call_seed(self._gen)
-        _lib._ojr_set_status(self._gen, 0xb1e55ed2 if first else 0xb1e55ed3)
-        return size;
+        _lib.ojr_call_seed(self.gen, seed, size)
+        _lib.ojr_set_seeded(self.gen, 1)
 
     def reseed(self):
-        _lib.ojr_reseed(self._gen)
-
-    def get_seed(self):
-        size = _lib.ojr_get_seedsize(self._gen)
-        if 0 != size:
-            arr = (c_int32 * size)()
-            _lib.ojr_get_seed(self._gen, arr, size)
-            for i in range(size):
-                yield arr[i]
+        size = algorithm_seedsize(_lib.ojr_get_algorithm(self.gen))
+        seed = (c_int32 * size)()
+        _lib.ojr_get_system_entropy(seed, size)
+        _lib.ojr_call_reseed(self.gen, seed, size)
 
     def algorithm(self):
-        return _lib._ojr_get_algorithm(self._gen)
+        return _lib.ojr_get_algorithm(self.gen)
 
     def next16(self):
-        return _lib.ojr_next16(self._gen)
+        return _lib.ojr_next16(self.gen)
 
     def next32(self):
-        return _lib.ojr_next32(self._gen)
+        return _lib.ojr_next32(self.gen)
 
     def next64(self):
-        return _lib.ojr_next64(self._gen)
+        return _lib.ojr_next64(self.gen)
 
     def next_double(self):
-        return _lib.ojr_next_double(self._gen)
+        return _lib.ojr_next_double(self.gen)
 
     def next_signed_double(self):
-        return _lib.ojr_next_signed_double(self._gen)
+        return _lib.ojr_next_signed_double(self.gen)
 
     def next_gaussian(self):
-        return _lib.ojr_next_gaussian(self._gen)
+        return _lib.ojr_next_gaussian(self.gen)
 
     def rand(self, limit):
-        return _lib.ojr_rand(self._gen, limit)
+        return _lib.ojr_rand(self.gen, limit)

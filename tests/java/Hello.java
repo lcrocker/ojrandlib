@@ -1,7 +1,12 @@
 /* OneJoker RNG library <http://lcrocker.github.io/onejoker/ojrandlib>
  *
- * "Hello World" app included here to keep docs in sync with code.
+ * To the extent possibile under law, Lee Daniel Crocker has waived all
+ * copyright and related or neighboring rights to this work.
+ * <http://creativecommons.org/publicdomain/zero/1.0/>
+ *
+ * Basic Java example.
  */
+
 import com.onejoker.randlib.*;
 
 public class Hello {
@@ -13,8 +18,8 @@ public class Hello {
         Generator g = new Generator("mt19937");
         g.seed(gSeed);
 
-        for (int i = 0; i < 100; ++i) {
-            System.out.printf("%10u ", g.next32());
+        for (int i = 0; i < 20; ++i) {
+            System.out.printf("%12d ", g.next32());
             if (4 == (i % 5)) System.out.printf("\n");
         }
     }

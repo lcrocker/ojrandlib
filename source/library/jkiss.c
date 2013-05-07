@@ -24,20 +24,14 @@
 
 #include "ojrandlib.h"
 
-static void _ojr_jkiss_seed(ojr_generator *g) {
-    if (g->seedsize < 4) {
-        g->state[0] = 123456789;
-        g->state[1] = 987654321;
-        g->state[2] = 43219876;
-        g->state[3] = 6543217;
-    }
-    ojr_default_seed(g);
+static void _ojr_jkiss_seed(ojr_generator *g, uint32_t *seed, int size) {
+    ojr_default_seed(g, seed, size);
     if (0 == g->state[1]) g->state[1] = 1;
     g->state[3] = g->state[3] % 698769068 + 1;
 }
 
-static void _ojr_jkiss_reseed(ojr_generator *g, int value) {
-    ojr_default_reseed(g, value);
+static void _ojr_jkiss_reseed(ojr_generator *g, uint32_t *seed, int size) {
+    ojr_default_reseed(g, seed, size);
     if (0 == g->state[1]) g->state[1] = 1;
     g->state[3] = g->state[3] % 698769068 + 1;
 }

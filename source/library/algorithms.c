@@ -9,7 +9,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 #include <assert.h>
 
 #include "ojrandlib.h"
@@ -51,7 +51,7 @@ int ojr_algorithm_id(const char *name) {
     if (NULL == name) return 0;
 
     for (i = 0; i < c; ++i) {
-        if (0 == STRCASECMP(name, (ojr_algorithms[i])->name)) {
+        if (0 == strcmp(name, (ojr_algorithms[i])->name)) {
             return i + 1;
         }
     }

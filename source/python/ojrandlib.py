@@ -3,11 +3,16 @@
 # Main python module.
 #
 
-import sys
+import sys, os
 from ctypes import *
 from ctypes.util import find_library
 
-_lib = CDLL(find_library("ojrand"))
+# Work around bug in Windows Python3
+if "nt" == os.name:
+    _lib = CDLL(find_library("ojrand.dll"))
+else:
+    _lib = CDLL(find_library("ojrand"))
+
 _lib.ojr_algorithm_name.restype = c_char_p
 _lib.ojr_next16.restype = c_int16
 _lib.ojr_next32.restype = c_int32

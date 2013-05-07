@@ -134,16 +134,6 @@ extern void ojr_default_reseed(ojr_generator *, uint32_t *, int);
 extern void ojr_default_seed(ojr_generator *, uint32_t *, int);
 
 
-/* OTHER */
-
-
-#if defined(_WIN32)
-#define STRCASECMP(s,t) stricmp((s),(t))
-#else
-#define STRCASECMP(s,t) strcasecmp((s),(t))
-#endif
-
-
 #ifdef __cplusplus
 } /* end of extern "C" */
 #endif /* __cplusplus */

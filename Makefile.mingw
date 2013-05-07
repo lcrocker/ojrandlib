@@ -1,29 +1,28 @@
 # OneJoker RNG library <http://lcrocker.github.io/onejoker/ojrandlib>
 #
-# Linux Makefile -- requires Gmake 3.8, realpath, and probably some
-# other things I take for granted.
+# Windows/MinGW Makefile.
 #
 
-ROOT := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+ROOT := $(shell dirname $(lastword $(MAKEFILE_LIST)))
 SRCDIR = $(ROOT)/source
 TESTDIR = $(ROOT)/tests
 BLDDIR = $(ROOT)/build
 CLASSDIR = com/onejoker/randlib
 
 CC = gcc
-CFLAGS = -g -DDEBUG -Wall -std=c99 -pedantic -fpic
-# CFLAGS = -O3 -DNDEBUG -Wall -std=c99 -pedantic -fpic
+CFLAGS = -g -DDEBUG -Wall -std=c99 -pedantic
+# CFLAGS = -O3 -DNDEBUG -Wall -std=c99 -pedantic
 CXX = g++
-CXXFLAGS = -g -DDEBUG -Wall -std=c++98 -pedantic -fpic
+CXXFLAGS = -g -DDEBUG -Wall -std=c++98 -pedantic
 LD = g++
-LDFLAGS = -nostartfiles
+LDFLAGS = -Wl,--export-all-symbols -Wl,--add-stdcall-alias -lcrypt32
 
-JAVA_HOME ?= /usr/java
+JAVA_HOME ?= "Program Files/Java/jdk1.7.0_21"
 JAVACFLAGS = -g -Werror
 # JAVACFLAGS = -g:none
 JPACKAGE = $(subst /,.,$(CLASSDIR))
 
-LIBNAME = libojrand.so
+LIBNAME = ojrand.dll
 LIBCNAMES = init.c generator.c capi.c entropy.c ziggurat.c
 ALGORITHMS = algorithms.c jkiss.c mt19937.c mwc256.c
 TESTNAMES = hello cpphello hello.py Hello.class functions
@@ -46,7 +45,7 @@ java: $(BLDDIR)/$(CLASSDIR)/Generator.class $(BLDDIR)/com_onejoker_randlib_Gener
 test: $(TESTPROGS)
 	cd $(BLDDIR) && ./hello
 	cd $(BLDDIR) && ./cpphello
-	cd $(BLDDIR) && ./hello.py
+	cd $(BLDDIR) && python ./hello.py
 	cd $(BLDDIR) && java -ea -cp "." -Djava.library.path="." Hello
 	cd $(BLDDIR) && ./functions
 
@@ -63,7 +62,7 @@ $(BLDDIR)/wrapper.o: $(SRCDIR)/library/wrapper.cc $(SRCDIR)/library/ojrandlib.h 
 	$(CXX) $(CXXFLAGS) -c -I$(SRCDIR)/library -o $@ $<
 
 $(BLDDIR)/jniGenerator.o: $(SRCDIR)/java/$(CLASSDIR)/jniGenerator.c $(SRCDIR)/library/ojrandlib.h | $(BLDDIR)
-	$(CC) $(CFLAGS) -c -I$(JAVA_HOME)/include -I$(SRCDIR)/library -o $@ $<
+	$(CC) $(CFLAGS) -c -I"$(JAVA_HOME)/include" -I"$(JAVA_HOME)/include/win32" -I$(SRCDIR)/library -o $@ $<
 
 $(BLDDIR)/%.o: $(SRCDIR)/library/%.c $(SRCDIR)/library/ojrandlib.h | $(BLDDIR)
 	$(CC) $(CFLAGS) -c -I$(SRCDIR)/library -o $@ $<

@@ -19,7 +19,7 @@ JNIEXPORT jint JNICALL Java_com_onejoker_randlib_Generator_nStructSize
 JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nInit
 (JNIEnv *env, jclass cls, jobject b) {
     jbyte *ptr = (*env)->GetDirectBufferAddress(env, b);
-    return ojr_init((ojr_generator *)ptr);
+    ojr_init((ojr_generator *)ptr);
 }
 
 JNIEXPORT jint JNICALL Java_com_onejoker_randlib_Generator_nAlgorithmCount
@@ -171,5 +171,5 @@ JNIEXPORT jint JNICALL Java_com_onejoker_randlib_Generator_nRand
 JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nDiscard
 (JNIEnv *env, jclass cls, jobject b, jint count) {
     jbyte *ptr = (*env)->GetDirectBufferAddress(env, b);
-	return ojr_discard((ojr_generator *)ptr, count);
+	ojr_discard((ojr_generator *)ptr, count);
 }

@@ -155,28 +155,22 @@ void ojr_call_refill(ojr_generator *g) {
 
 // If the algorithm has no reseed function, this will be called.
 void ojr_default_reseed(ojr_generator *g, uint32_t *seed, int size) {
-    int i, c;
+    int i, j = 0;
 
-    while (size) {
-        c = (size <= g->statesize) ? size : g->statesize;
-        for (i = 0; i < c; ++i) g->state[i] ^= *seed++;
-        size -= c;
+    for (i = 0; i < g->statesize; ++i) {
+        g->state[i] ^= seed[j];
+        if (++j >= size) j = 0;
     }
 }
 
 void ojr_default_seed(ojr_generator *g, uint32_t *seed, int size) {
-    int i, x;
+    int i, x, j = 0;
 
-    if (size < g->statesize) {
-        x = 232497429;
-        for (i = 0; i < g->statesize; ++i) {
-            x = (69069 * x) + 764385;
-            g->state[i] = x;
-        }
-        for (i = 0; i < size; ++i) g->state[i] ^= *seed++;
-    } else {
-        memset(g->state, 0, 4 * g->statesize);
-        ojr_default_reseed(g, seed, size);
+    x = 232497429;
+    for (i = 0; i < g->statesize; ++i) {
+        x = (69069 * x) + 764385 + seed[j];
+        g->state[i] = x;
+        if (++j >= size) j = 0;
     }
 }
 

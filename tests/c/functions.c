@@ -15,28 +15,27 @@
 #include <ctype.h>
 
 #include "ojrandlib.h"
-#include "stats.h"
 
 static char *anames[] = { "jkiss", "mt19937", "mwc256" };
 
 static uint32_t arr01[3] = { 0x97a09aff, 0xceb5542e, 0xdb01c792 };
 
 static uint32_t arr04[3][4] = {
-    { 0xd3721d07, 0x74267b8d, 0x7a6b727c, 0xc07d6213 },
+    { 0x54aec80e, 0xd4d13c35, 0xc3ff87d8, 0xca2c75d0 },
     { 0xa1dc760c, 0xba264aba, 0xff41e7d0, 0x0e39538e },
-    { 0xf272d444, 0x6ee04eb8, 0x37a0f78b, 0x28e7b33f }
+    { 0x31de7098, 0xa90f9f57, 0xc1ad0ada, 0x17b06fe5 },
 };
 
 static uint32_t arr16[3][16] = {
-    { 0x2ae1f7eb, 0xe45ef953, 0x5312b879, 0xca0529e0, 0x00bb1b7f, 0x42ca278a,
-      0x28083f8f, 0x5bb31243, 0x9bdcca3f, 0x5009b34b, 0x902acb3c, 0xb3f48702,
-      0x8fe4259c, 0x8893a37a, 0x985fa9d9, 0xf7c70dc4 },
+    { 0x465ace37, 0x0049a545, 0xb0857ba8, 0xd06808d7, 0xe98bc4b0, 0x47684c91,
+      0xb132aea9, 0x6a7fd0d5, 0xfc1c9678, 0x217e746e, 0x12dcbeae, 0x1dbf35c6,
+      0xe1d78ec7, 0x619aa14e, 0xa1679d0a, 0x56d68e9b },
     { 0x12578d58, 0x6946bebf, 0x9feb9569, 0x4103852c, 0x1c707efa, 0x3bbec4f2,
       0x3a69ad0b, 0x7b5a93c8, 0xc0f5fc41, 0x999f5b4f, 0x06ba9fb3, 0xd8c6ade5,
       0x4d5e1db3, 0x89a31bf1, 0xc456c629, 0x5f5235b2 },
-    { 0x6c8e6a9c, 0xdaa9fda6, 0x2b7a4152, 0x15784387, 0x6964beb4, 0x87e5cfd2,
-      0x554e3e24, 0x78e4d7f3, 0xbbe0351a, 0x362940ab, 0x63aa0f4a, 0x63d40b53,
-      0x4da3b19e, 0x7a8418e2, 0x4e548d2f, 0xd88e0f08 }
+    { 0x730a0698, 0x0420e50c, 0xb0910b27, 0xf1de2c85, 0x3a5b8a3f, 0xb2781ad2,
+      0x450f79fe, 0x3d04ed02, 0x80d4463f, 0x79a11b14, 0xfca0c302, 0xad0425b0,
+      0xeaba6612, 0xe1edccc4, 0xaca788df, 0xe23032fb },
 };
 
 int statics(void) {
@@ -51,7 +50,6 @@ int statics(void) {
 
         if (i != ojr_algorithm_id(name)) return 150;
         if ((ojr_algorithm_seedsize(i) < 1) ||
-            (ojr_algorithm_seedsize(i) > ojr_algorithm_statesize(i)) ||
             (ojr_algorithm_statesize(i) < 1) ||
             (ojr_algorithm_bufsize(i) < 1)) return 155;
 
@@ -217,9 +215,9 @@ int fuzz(int count) {
     for (i = 0; i < count; ++i) {
         test = ojr_rand(NULL, 100);
 
-        if (test < 30) {
+        if (test < 15) {
             f = structureaccess();
-        } else if (test < 60) {
+        } else if (test < 30) {
             f = statics();
         } else if (test < 80) {
             sub = ojr_rand(NULL, 3);
@@ -235,7 +233,7 @@ int fuzz(int count) {
 }
 
 int main(int argc, char *argv[]) {
-    int f;
+    int f = 0;
 
     f = fuzz(1000);
     printf("Basic functions test %sed.\n", f ? "fail" : "pass");

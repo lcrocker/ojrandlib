@@ -33,7 +33,7 @@ LIBOBJECTS = $(patsubst %.c,$(BLDDIR)/%.o,$(LIBCNAMES))
 LIBOBJECTS += $(BLDDIR)/wrapper.o $(BLDDIR)/jniGenerator.o
 TESTPROGS = $(patsubst %,$(BLDDIR)/%,$(TESTNAMES))
 
-.PHONY: all lib test clean python java
+.PHONY: all lib test clean python java randtest
 
 all: lib python java test
 
@@ -49,6 +49,9 @@ test: $(TESTPROGS)
 	cd $(BLDDIR) && ./hello.py
 	cd $(BLDDIR) && java -ea -cp "." -Djava.library.path="." Hello
 	cd $(BLDDIR) && ./functions
+
+randtest: $(BLDDIR)/random
+	cd $(BLDDIR) && ./random
 
 clean:
 	rm -rf $(BLDDIR)/*
@@ -72,10 +75,13 @@ $(BLDDIR)/$(LIBNAME): $(LIBOBJECTS)
 	$(LD) $(LDFLAGS) -shared -o $@ $^ -lm
 
 $(BLDDIR)/hello: $(TESTDIR)/c/hello.c $(BLDDIR)/$(LIBNAME)
-	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lojrand
+	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lojrand
 
-$(BLDDIR)/functions: $(TESTDIR)/c/functions.c $(TESTDIR)/c/stats.* $(BLDDIR)/$(LIBNAME)
-	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(TESTDIR)/c -I$(SRCDIR)/library -o $@ $< -lm -lojrand
+$(BLDDIR)/functions: $(TESTDIR)/c/functions.c $(BLDDIR)/$(LIBNAME)
+	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lojrand
+
+$(BLDDIR)/random: $(TESTDIR)/c/random.c $(BLDDIR)/$(LIBNAME)
+	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lgsl -lgslcblas -lojrand
 
 $(BLDDIR)/cpphello: $(TESTDIR)/cpp/hello.cc $(BLDDIR)/$(LIBNAME)
 	$(CXX) $(CXXFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lojrand

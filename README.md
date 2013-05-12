@@ -4,9 +4,9 @@ ojrandlib
 OneJoker pseudo-random number generator library
 ----
 
-More info: [Website](http://lcrocker.github.io/onejoker/ojrandlib), [Source code](http://github.com/lcrocker/ojrandlib)
+More info: [Website](http://lcrocker.github.io/onejoker/randlib), [Source code](http://github.com/lcrocker/ojrandlib)
 
-This library serves two purposes: first, it's a ready-to-use state-of-the-art random number generation library with multiple algorithms that can be used from C, C++, Java, and Python on Linux or Windows for simulations and other work demanding a fast and good quality PRNG. Second, it can be used by people developing PRNGs to provide all the "filler" code needed around a new algorithm: things like seed management, floating point conversions, and such.
+This library serves two purposes: first, it's a state-of-the-art random number generation library with multiple algorithms that can be used from C, C++, Java, and Python on Linux or Windows for simulations and other work demanding a fast and good quality PRNG. Second, it can be used by people developing PRNGs to provide all the "filler" code needed around a new algorithm: things like seed management, floating point conversions, and such.
 
 Credits and copyrights
 ----

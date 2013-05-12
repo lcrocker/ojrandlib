@@ -101,7 +101,7 @@ void ojr_reseed(ojr_generator *g, uint32_t *seed, int size) {
 
 uint32_t ojr_next32(ojr_generator *g) {
     if (NULL == g) g = &ojr_default_generator;
-    else { assert(0x5eed1e55 == g->init); }
+    else { assert(0x5eed1e55 == g->init && g->seeded); }
 
     if (g->bptr == g->buf) {
         ojr_call_refill(g);
@@ -113,7 +113,7 @@ uint32_t ojr_next32(ojr_generator *g) {
 uint16_t ojr_next16(ojr_generator *g) {
     uint16_t r16;
     if (NULL == g) g = &ojr_default_generator;
-    else { assert(0x5eed1e55 == g->init); }
+    else { assert(0x5eed1e55 == g->init && g->seeded); }
 
     if (g->leftover) {
         r16 = g->leftover & 0xFFFF;

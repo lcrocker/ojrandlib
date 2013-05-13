@@ -40,8 +40,7 @@ static int fetch(char *text, int size) {
     WSADATA wsadata;
     if (SOCKET_ERROR == WSAStartup(MAKEWORD(1,1), &wsadata)) return 0;
 #endif
-    host = gethostbyname("www.random.org");
-    if (0 != h_errno) return 0;
+    if (NULL == (host = gethostbyname("www.random.org"))) return 0;
     if (-1 == (sock = socket(AF_INET, SOCK_STREAM, 0))) return 0;
 
     do {

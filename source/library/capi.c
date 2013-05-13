@@ -89,6 +89,18 @@ void ojr_system_seed(ojr_generator *g) {
     free(seed);
 }
 
+void ojr_network_seed(ojr_generator *g) {
+    uint32_t *seed;
+    int id = ojr_get_algorithm(g);
+    int size = ojr_algorithm_seedsize(id);
+
+    if (! (seed = malloc(4 * size))) return;
+    ojr_get_random_org(seed, size);
+
+    ojr_array_seed(g, seed, size);
+    free(seed);
+}
+
 void ojr_reseed(ojr_generator *g, uint32_t *seed, int size) {
     assert(0x5eed1e55 == g->init);
     assert(ojr_get_seeded(g));

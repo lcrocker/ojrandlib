@@ -62,6 +62,10 @@ int statics(void) {
     ojr_get_system_entropy(&v2, 1);
     if (v1 == v2) return 180;
 
+    if (1 != ojr_get_random_org(&v1, 1)) return 182;
+    if (1 != ojr_get_random_org(&v2, 1)) return 183;
+    if (v1 == v2) return 185;
+
     if (ojr_structure_size() != sizeof(ojr_generator)) return 190;
     return 0;
 }

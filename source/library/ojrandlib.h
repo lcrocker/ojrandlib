@@ -75,11 +75,13 @@ extern ojr_generator ojr_default_generator;
 extern ojr_generator *ojr_open(const char *);
 extern void ojr_close(ojr_generator *);
 extern void ojr_system_seed(ojr_generator *);
+extern void ojr_network_seed(ojr_generator *);
 extern void ojr_int_seed(ojr_generator *, int);
 extern void ojr_array_seed(ojr_generator *, uint32_t *, int);
 extern void ojr_reseed(ojr_generator *, uint32_t *, int);
 
 extern void ojr_get_system_entropy(uint32_t *, int);
+extern int ojr_get_random_org(uint32_t *, int);
 extern int ojr_algorithm_count(void);
 extern char *ojr_algorithm_name(int);
 

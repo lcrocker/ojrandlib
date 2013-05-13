@@ -15,7 +15,8 @@ CFLAGS = -g -DDEBUG -Wall -std=c99 -pedantic
 CXX = g++
 CXXFLAGS = -g -DDEBUG -Wall -std=c++98 -pedantic
 LD = g++
-LDFLAGS = -Wl,--export-all-symbols -Wl,--add-stdcall-alias -lcrypt32
+LDFLAGS = -Wl,--export-all-symbols -Wl,--add-stdcall-alias
+SYSTEMLIBS = -lcrypt32 -lws2_32
 
 JAVA_HOME ?= "Program Files/Java/jdk1.7.0_21"
 JAVACFLAGS = -g -Werror
@@ -71,13 +72,13 @@ $(BLDDIR)/%.o: $(SRCDIR)/library/%.c $(SRCDIR)/library/ojrandlib.h | $(BLDDIR)
 	$(CC) $(CFLAGS) -c -I$(SRCDIR)/library -o $@ $<
 
 $(BLDDIR)/$(LIBNAME): $(LIBOBJECTS)
-	$(LD) $(LDFLAGS) -shared -o $@ $^ -lm
+	$(LD) $(LDFLAGS) -shared -o $@ $^ $(SYSTEMLIBS)
 
 $(BLDDIR)/hello: $(TESTDIR)/c/hello.c $(BLDDIR)/$(LIBNAME)
 	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lojrand
 
-$(BLDDIR)/functions: $(TESTDIR)/c/functions.c $(TESTDIR)/c/stats.* $(BLDDIR)/$(LIBNAME)
-	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(TESTDIR)/c -I$(SRCDIR)/library -o $@ $< -lm -lojrand
+$(BLDDIR)/functions: $(TESTDIR)/c/functions.c $(BLDDIR)/$(LIBNAME)
+	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lojrand
 
 $(BLDDIR)/random: $(TESTDIR)/c/random.c $(BLDDIR)/$(LIBNAME)
 	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lgsl -lgslcblas -lojrand

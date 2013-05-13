@@ -12,10 +12,18 @@
 #include <string.h>
 #include <assert.h>
 
+#if defined(_WIN32)
+
+#include <winsock.h>
+
+#else
+
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+
+#endif
 
 #include "ojrandlib.h"
 
@@ -24,30 +32,38 @@ static const char *fetch_request =
     "Host: www.random.org\r\nUser-Agent: OJRandLib\r\n\r\n";
 
 static int fetch(char *text, int size) {
-    struct hostent *host = gethostbyname("www.random.org");
+    int sock, r, tr = 0;
+    struct hostent *host;
     struct sockaddr_in addr;
  
-    int sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (-1 == sock) return 0;
+#if defined(_WIN32)
+    WSADATA wsadata;
+    if (SOCKET_ERROR == WSAStartup(MAKEWORD(1,1), &wsadata)) return 0;
+#endif
+    host = gethostbyname("www.random.org");
+    if (0 != h_errno) return 0;
+    if (-1 == (sock = socket(AF_INET, SOCK_STREAM, 0))) return 0;
 
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(80);
-    addr.sin_addr.s_addr= *((unsigned long *)(host->h_addr_list[0]));
-    if (-1 == connect(sock, (struct sockaddr *)&addr, sizeof(addr))) {
-        close(sock);
-        return 0;
-    }
-    if (-1 == send(sock, fetch_request, strlen(fetch_request), 0)) {
-        close(sock);
-        return 0;
-    }
-    int r, tr = 0;
-    while (tr < size) {
-        r = recv(sock, text + tr, size - tr, 0);
-        if (0 == r) break;
-        tr += r;
-    }
+    do {
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons(80);
+        addr.sin_addr.s_addr= *((unsigned long *)(host->h_addr_list[0]));
+        if (-1 == connect(sock, (struct sockaddr *)&addr, sizeof(addr))) break;
+        if (-1 == send(sock, fetch_request, strlen(fetch_request), 0)) break;
+
+        while (tr < size) {
+            r = recv(sock, text + tr, size - tr, 0);
+            if (0 == r) break;
+            tr += r;
+        }
+    } while (0);
+
+#if defined(_WIN32)
+    closesocket(sock);
+    WSACleanup();
+#else
     close(sock);
+#endif
     return tr;
 }
 

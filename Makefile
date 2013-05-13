@@ -17,6 +17,7 @@ CXX = g++
 CXXFLAGS = -g -DDEBUG -Wall -std=c++98 -pedantic -fpic
 LD = g++
 LDFLAGS = -nostartfiles
+SYSTEMLIBS = -lm
 
 JAVA_HOME ?= /usr/java
 JAVACFLAGS = -g -Werror
@@ -72,7 +73,7 @@ $(BLDDIR)/%.o: $(SRCDIR)/library/%.c $(SRCDIR)/library/ojrandlib.h | $(BLDDIR)
 	$(CC) $(CFLAGS) -c -I$(SRCDIR)/library -o $@ $<
 
 $(BLDDIR)/$(LIBNAME): $(LIBOBJECTS)
-	$(LD) $(LDFLAGS) -shared -o $@ $^ -lm
+	$(LD) $(LDFLAGS) -shared -o $@ $^ $(SYSTEMLIBS)
 
 $(BLDDIR)/hello: $(TESTDIR)/c/hello.c $(BLDDIR)/$(LIBNAME)
 	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lojrand

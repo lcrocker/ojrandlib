@@ -1,4 +1,4 @@
-/* OneJoker RNG library <http://lcrocker.github.io/onejoker/ojrandlib>
+/* OneJoker RNG library <http://lcrocker.github.io/onejoker/randlib>
  *
  * To the extent possibile under law, Lee Daniel Crocker has waived all
  * copyright and related or neighboring rights to this work.
@@ -63,7 +63,7 @@ JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nGetSystemEntropy
 }
 
 JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nSetSeeded
-(JNIEnv *env, jclass cls, jobject b, jint s) {  
+(JNIEnv *env, jclass cls, jobject b, jint s) {
     jbyte *ptr = (*env)->GetDirectBufferAddress(env, b);
     ojr_set_seeded((ojr_generator *)ptr, s);
 }
@@ -114,7 +114,7 @@ JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nCallSeed
 }
 
 JNIEXPORT void JNICALL Java_com_onejoker_randlib_Generator_nCallReseed
-(JNIEnv *env, jclass cls, jobject b, jobject s, jint c) {	
+(JNIEnv *env, jclass cls, jobject b, jobject s, jint c) {
     jbyte *ptr = (*env)->GetDirectBufferAddress(env, b);
     jbyte *sp = (*env)->GetDirectBufferAddress(env, s);
     ojr_call_reseed((ojr_generator *)ptr, (uint32_t *)sp, c);

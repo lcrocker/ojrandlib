@@ -1,13 +1,10 @@
-/* OneJoker RNG library <http://lcrocker.github.io/onejoker/ojrandlib>
+/* OneJoker RNG library <http://lcrocker.github.io/onejoker/randlib>
  *
  * To the extent possibile under law, Lee Daniel Crocker has waived all
  * copyright and related or neighboring rights to this work.
  * <http://creativecommons.org/publicdomain/zero/1.0/>
  *
- * Statistical routines for testing RNG.
- *
- * Chi-square p-value calculation by Jacob F. W. at the Code Project:
- * http://www.codeproject.com/Articles/432194/How-to-Calculate-the-Chi-Squared-P-Value
+ * Statistical tests for RNGs.
  */
 
 #include <stdlib.h>

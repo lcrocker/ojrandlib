@@ -1,4 +1,4 @@
-# OneJoker RNG library <http://lcrocker.github.io/onejoker/ojrandlib>
+# OneJoker RNG library <http://lcrocker.github.io/onejoker/randlib>
 #
 # Linux Makefile -- requires Gmake 3.8, realpath, and probably some
 # other things I take for granted.

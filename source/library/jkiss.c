@@ -1,4 +1,4 @@
-/* OneJoker RNG library <http://lcrocker.github.io/onejoker/ojrandlib>
+/* OneJoker RNG library <http://lcrocker.github.io/onejoker/randlib>
  *
  * To the extent possibile under law, Lee Daniel Crocker has waived all
  * copyright and related or neighboring rights to this work.
@@ -7,15 +7,6 @@
  * Pseudo-random number generator based on the public domain JKISS by
  * David Jones of the UCL Bioinformatics Group.
  * <http://www.cs.ucl.ac.uk/staff/d.jones/GoodPracticeRNG.pdf>.
- *
- * This is also a canonical example of how to implement a new algorithm
- * for the library: first, implement the five functions open, close,
- * seed, reseed, and refill. The first two can do nothing if you don't
- * need them, and the third and fourth have handy defaults. The real
- * work is in refill(), which needs to simply fill a buffer full of
- * random bits. Then you have to define the algorithm info structure and
- * fill it, then add it to the list at libmain.c. That's it--all the rest
- * you get for free.
  */
 
 #include <stdlib.h>

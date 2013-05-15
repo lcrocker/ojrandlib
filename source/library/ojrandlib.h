@@ -1,4 +1,4 @@
-/* OneJoker RNG library <http://lcrocker.github.io/onejoker/ojrandlib>
+/* OneJoker RNG library <http://lcrocker.github.io/onejoker/randlib>
  *
  * To the extent possibile under law, Lee Daniel Crocker has waived all
  * copyright and related or neighboring rights to this work.
@@ -152,6 +152,7 @@ typedef std::vector<uint32_t> Seed;
 int algorithmCount(void);
 char *algorithmName(int);
 void getSystemEntropy(Seed &, int);
+void getRandomOrg(Seed &, int);
 
 uint16_t next16(void);
 uint32_t next32(void);

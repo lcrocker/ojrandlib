@@ -1,4 +1,4 @@
-/* OneJoker RNG library <http://lcrocker.github.io/onejoker/ojrandlib>
+/* OneJoker RNG library <http://lcrocker.github.io/onejoker/randlib>
  *
  * To the extent possibile under law, Lee Daniel Crocker has waived all
  * copyright and related or neighboring rights to this work.
@@ -20,6 +20,11 @@ char *algorithmName(int id) { return ojr_algorithm_name(id); }
 void getSystemEntropy(Seed &vec, int count) {
     vec.resize(count);
     ojr_get_system_entropy(vec.data(), count);
+}
+
+void getRandomOrg(Seed &vec, int count) {
+    vec.resize(count);
+    ojr_get_random_org(vec.data(), count);
 }
 
 uint16_t next16(void){ return ojr_next16(NULL); }

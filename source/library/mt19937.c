@@ -1,4 +1,4 @@
-/* OneJoker RNG library <http://lcrocker.github.io/onejoker/ojrandlib>
+/* OneJoker RNG library <http://lcrocker.github.io/onejoker/randlib>
  *
  * This code for the Mersenne Twister algorithm is based on the original
  * reference code "mt19937ar.c" by Takuji Nishimura and Makoto Matsumoto.

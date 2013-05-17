@@ -174,7 +174,7 @@ static double results(counter *c) {
 }
 
 static int bsizes[] = { 7, 32, 52, 53, 63, 65, 256, 1000 };
-static char *testnames[] = { "int.uni", "flt.uni", "sgn.uni", "flt.nrm" };
+static char *testnames[] = { "int.uni", "flt.uni", "sgn.uni", "sgn.nrm" };
 
 #define OneOverSqrt2Pi 0.3989422804014327
 

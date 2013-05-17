@@ -16,7 +16,8 @@
 
 #include "ojrandlib.h"
 
-static char *anames[] = { "jkiss", "mt19937", "mwc256" };
+#define ACOUNT 3
+static char *anames[] = { "jkiss127", "mt19937", "mwc8222" };
 
 static uint32_t arr01[3] = { 0x97a09aff, 0xceb5542e, 0xdb01c792 };
 
@@ -39,7 +40,7 @@ static uint32_t arr16[3][16] = {
 };
 
 int statics(void) {
-    int i, j, c = ojr_algorithm_count();
+    int i, j, c = ACOUNT;
     uint32_t v1, v2;
     char *name;
 
@@ -115,7 +116,7 @@ int allequal(uint32_t *a, uint32_t *b, int count) {
 }
 
 int intseed(void) {
-    int i, f = 0, a = ojr_rand(NULL, 3);
+    int i, f = 0, a = ojr_rand(NULL, ACOUNT);
     uint32_t r, second[4];
     ojr_generator *g = ojr_open(anames[a]);
     ojr_int_seed(g, arr01[a]);
@@ -133,7 +134,7 @@ int intseed(void) {
 }
 
 int arrayseed(void) {
-    int i, f =0, a = ojr_rand(NULL, 3);
+    int i, f =0, a = ojr_rand(NULL, ACOUNT);
     uint32_t r, second[16], seed[4] = { 123, 234, 345, 456 };
     ojr_generator *g = ojr_open(anames[a]);
     ojr_array_seed(g, arr04[a], 4);
@@ -151,7 +152,7 @@ int arrayseed(void) {
 }
 
 int goodseed(void) {
-    int i, f = 0, a = ojr_rand(NULL, 3);
+    int i, f = 0, a = ojr_rand(NULL, ACOUNT);
     uint32_t first[4], second[4];
     ojr_generator *g = ojr_open(anames[a]);
 
@@ -173,11 +174,11 @@ int outoforder(void) {
     ojr_generator *g1, *g2, *g3, *g4, *g5;
     uint32_t v1, v2, seed[4];
 
-    g1 = ojr_open("mwc256");
+    g1 = ojr_open("mwc8222");
     g2 = ojr_open("mt19937");
-    g3 = ojr_open("jkiss");
-    g4 = ojr_open("mwc256");
-    g5 = ojr_open("jkiss");
+    g3 = ojr_open("jkiss127");
+    g4 = ojr_open("mwc8222");
+    g5 = ojr_open("jkiss127");
 
     ojr_get_system_entropy(seed, 4);
     ojr_array_seed(g3, seed, 4);

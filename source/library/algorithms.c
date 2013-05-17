@@ -18,14 +18,14 @@
 /* This is the global list of available algorithms. Each algorithm source file
  * must contain a structure whose name is public, and these are listed here.
  */
-extern ojr_algorithm ojr_algorithm_jkiss;
+extern ojr_algorithm ojr_algorithm_mwc8222;
+extern ojr_algorithm ojr_algorithm_jkiss127;
 extern ojr_algorithm ojr_algorithm_mt19937;
-extern ojr_algorithm ojr_algorithm_mwc256;
 
 ojr_algorithm *ojr_algorithms[] = {
-    &ojr_algorithm_jkiss,
+    &ojr_algorithm_mwc8222,
+    &ojr_algorithm_jkiss127,
     &ojr_algorithm_mt19937,
-    &ojr_algorithm_mwc256,
     NULL,
 };
 

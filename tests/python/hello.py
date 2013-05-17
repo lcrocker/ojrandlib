@@ -14,7 +14,7 @@ sys.path.insert(1, ".")
 
 import ojrandlib as rl
 
-g = rl.Generator("mwc256")
+g = rl.Generator("mwc8222")
 g.seed()
 
 print("  {:d}".format(g.rand(100)), " {:d}".format(g.next16()), end="")

@@ -14,7 +14,7 @@
 
 #include "ojrandlib.h"
 
-static void _ojr_mwc256_reseed(ojr_generator *g, uint32_t *seed, int size) {
+static void _ojr_mwc8222_reseed(ojr_generator *g, uint32_t *seed, int size) {
     int j = 0;
 
     for (int i = 0; i < g->bufsize; ++i) {
@@ -23,7 +23,7 @@ static void _ojr_mwc256_reseed(ojr_generator *g, uint32_t *seed, int size) {
     }
 }
 
-static void _ojr_mwc256_seed(ojr_generator *g, uint32_t *seed, int size) {
+static void _ojr_mwc8222_seed(ojr_generator *g, uint32_t *seed, int size) {
     int x = 232497429, j = 0;
 
     for (int i = 0; i < g->bufsize; ++i) {
@@ -34,7 +34,7 @@ static void _ojr_mwc256_seed(ojr_generator *g, uint32_t *seed, int size) {
     g->state[0] = 362436;
 }
 
-static void _ojr_mwc256_refill(ojr_generator *g) {
+static void _ojr_mwc8222_refill(ojr_generator *g) {
     uint64_t t;
     assert(1 == g->statesize && 256 == g->bufsize);
     uint32_t *s = g->buf, c = g->state[0];
@@ -47,11 +47,11 @@ static void _ojr_mwc256_refill(ojr_generator *g) {
     g->state[0] = c;
 }
 
-ojr_algorithm ojr_algorithm_mwc256 = {
-    "mwc256",
+ojr_algorithm ojr_algorithm_mwc8222 = {
+    "mwc8222",
     16, 1, 256,         // Output buffer is state vector
     NULL, NULL,
-    _ojr_mwc256_seed,
-    _ojr_mwc256_reseed,
-    _ojr_mwc256_refill,
+    _ojr_mwc8222_seed,
+    _ojr_mwc8222_reseed,
+    _ojr_mwc8222_refill,
 };

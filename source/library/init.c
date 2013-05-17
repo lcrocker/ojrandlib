@@ -18,21 +18,21 @@
 ojr_generator *ojr_genlist_head = NULL;
 
 // Keep a statically-allocated default generator for simplicity.
-extern ojr_algorithm ojr_algorithm_jkiss;
+extern ojr_algorithm ojr_algorithm_mwc8222;
 ojr_generator ojr_default_generator;
-uint32_t ojr_default_buffer[4 + 256];
+uint32_t ojr_default_buffer[1 + 256];
 
 
 // On library load, create and seed the default generator
 int ojr_library_startup(void) {
-    assert(&ojr_algorithm_jkiss == ojr_algorithms[0]);
-    assert(4 == ojr_algorithm_jkiss.statesize);
-    assert(256 == ojr_algorithm_jkiss.bufsize);
+    assert(&ojr_algorithm_mwc8222 == ojr_algorithms[0]);
+    assert(1 == ojr_algorithm_mwc8222.statesize);
+    assert(256 == ojr_algorithm_mwc8222.bufsize);
 
     ojr_init(&ojr_default_generator);
     ojr_set_algorithm(&ojr_default_generator, 1);
-    ojr_set_state(&ojr_default_generator, ojr_default_buffer, 4);
-    ojr_set_buffer(&ojr_default_generator, ojr_default_buffer + 4, 256);
+    ojr_set_state(&ojr_default_generator, ojr_default_buffer, 1);
+    ojr_set_buffer(&ojr_default_generator, ojr_default_buffer + 1, 256);
     ojr_call_open(&ojr_default_generator);
 
     ojr_system_seed(&ojr_default_generator);

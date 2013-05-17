@@ -26,7 +26,7 @@ JPACKAGE = $(subst /,.,$(CLASSDIR))
 
 LIBNAME = libojrand.so
 LIBCNAMES = init.c generator.c capi.c entropy.c ziggurat.c randomorg.c
-ALGORITHMS = algorithms.c jkiss.c mt19937.c mwc256.c
+ALGORITHMS = algorithms.c jkiss127.c mt19937.c mwc8222.c
 TESTNAMES = hello cpphello hello.py Hello.class functions
 
 LIBCNAMES += $(ALGORITHMS)

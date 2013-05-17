@@ -82,7 +82,7 @@ $(BLDDIR)/functions: $(TESTDIR)/c/functions.c $(BLDDIR)/$(LIBNAME)
 	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lojrand
 
 $(BLDDIR)/random: $(TESTDIR)/c/random.c $(BLDDIR)/$(LIBNAME)
-	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lgsl -lgslcblas -lojrand
+	$(CC) $(CFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lojrand
 
 $(BLDDIR)/cpphello: $(TESTDIR)/cpp/hello.cc $(BLDDIR)/$(LIBNAME)
 	$(CXX) $(CXXFLAGS) -L$(BLDDIR) -I$(SRCDIR)/library -o $@ $< -lm -lojrand

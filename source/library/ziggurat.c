@@ -22,10 +22,10 @@
 // The sizes of 128 and 256 from GM's paper are good, but I recalculated
 // the constants here and built fixed tables based on them.
 
-#define ZNR128 3.4426198558966521215
-#define ZNV128 0.0099125630353364610783
-#define ZER256 7.6971174701310497127
-#define ZEV256 0.0039496598225815572248
+#define ZNR128 3.4426198558966521214
+#define ZNV128 0.0099125630353364610791
+#define ZER256 7.6971174701310497140
+#define ZEV256 0.0039496598225815572200
 
 double ojr_next_exponential(ojr_generator *g) {
     uint64_t r;

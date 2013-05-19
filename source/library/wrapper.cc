@@ -32,7 +32,8 @@ uint32_t next32(void) { return ojr_next32(NULL); }
 uint64_t next64(void) { return ojr_next64(NULL); }
 double nextDouble(void) { return ojr_next_double(NULL); }
 double nextSignedDouble(void) { return ojr_next_signed_double(NULL); }
-double nextGaussian(void) { return ojr_next_gaussian(NULL); }
+double nextNormal(void) { return ojr_next_normal(NULL); }
+double nextExponential(void) { return ojr_next_exponential(NULL); }
 int rand(int limit) { return ojr_rand(NULL, limit); }
 
 void Generator::_init(int id) {
@@ -70,7 +71,8 @@ uint64_t Generator::next64() { return ojr_next64(this->cg); }
 
 double Generator::nextDouble() { return ojr_next_double(this->cg); }
 double Generator::nextSignedDouble() { return ojr_next_signed_double(this->cg); }
-double Generator::nextGaussian() { return ojr_next_gaussian(this->cg); }
+double Generator::nextNormal() { return ojr_next_normal(this->cg); }
+double Generator::nextExponential() { return ojr_next_exponential(this->cg); }
 
 int Generator::rand(int limit) { return ojr_rand(this->cg, limit); }
 void Generator::discard(int count) { ojr_discard(this->cg, count); }

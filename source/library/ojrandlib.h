@@ -90,7 +90,8 @@ extern uint32_t ojr_next32(ojr_generator *);
 extern uint64_t ojr_next64(ojr_generator *);
 extern double ojr_next_double(ojr_generator *);
 extern double ojr_next_signed_double(ojr_generator *);
-extern double ojr_next_gaussian(ojr_generator *);
+extern double ojr_next_exponential(ojr_generator *);
+extern double ojr_next_normal(ojr_generator *);
 
 extern int ojr_rand(ojr_generator *, int);
 extern void ojr_discard(ojr_generator *, int);
@@ -159,7 +160,8 @@ uint32_t next32(void);
 uint64_t next64(void);
 double nextDouble(void);
 double nextSignedDouble(void);
-double nextGaussian(void);
+double nextNormal(void);
+double nextExponential(void);
 int rand(int);
 
 
@@ -183,7 +185,8 @@ public:
     uint64_t next64(void);
     double nextDouble(void);
     double nextSignedDouble(void);
-    double nextGaussian(void);
+    double nextNormal(void);
+    double nextExponential(void);
 
     int rand(int);
     void discard(int);

@@ -19,7 +19,8 @@ _lib.ojr_next32.restype = c_int32
 _lib.ojr_next64.restype = c_int64
 _lib.ojr_next_double.restype = c_double
 _lib.ojr_next_signed_double.restype = c_double
-_lib.ojr_next_gaussian.restype = c_double
+_lib.ojr_next_normal.restype = c_double
+_lib.ojr_next_exponential.restype = c_double
 
 def algorithms():
     for i in range(_lib.ojr_algorithm_count()):
@@ -110,8 +111,11 @@ class Generator(object):
     def next_signed_double(self):
         return _lib.ojr_next_signed_double(self.gen)
 
-    def next_gaussian(self):
-        return _lib.ojr_next_gaussian(self.gen)
+    def next_normal(self):
+        return _lib.ojr_next_normal(self.gen)
+
+    def next_exponential(self):
+        return _lib.ojr_next_exponential(self.gen)
 
     def rand(self, limit):
         return _lib.ojr_rand(self.gen, limit)

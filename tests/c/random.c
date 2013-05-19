@@ -17,6 +17,11 @@
 
 #include "ojrandlib.h"
 
+#define ACOUNT 3
+#define CHOOSE(a) (a)[ojr_rand(NULL,sizeof(a)/sizeof((a)[0]))]
+
+static long iterations = 2000000;
+
 typedef struct _counter {
     int n;
     long total, clipped;
@@ -25,9 +30,6 @@ typedef struct _counter {
     long *counts;
     double *ev;
 } counter;
-
-static long iterations = 2000000;
-#define ACOUNT 3
 
 static counter *newcounter(int size) {
     counter *c = calloc(1, sizeof(counter));
@@ -57,8 +59,9 @@ else ++(c)->counts[b]; } while (0)
 if ((v) <= (c)->mn || (v) >= (c)->mx) ++(c)->clipped; \
 else ++(c)->counts[(int)(((v) - (c)->mn) * (c)->rw)]; } while (0)
 
-#define PI 3.14159265358979324
-#define LnSqrt2Pi 0.918938533204672742
+#define PI 3.1415926535897932385
+#define LNSQ2PI 0.9189385332046727418
+#define ISQ2 0.70710678118654752444
 
 static double lanczos[9] = {
     0.999999999999809932, 676.520368121885099, -1259.13921672240287,
@@ -75,12 +78,11 @@ static double lngamma(double z) {
 
     for (int j = 8; j > 0; --j) { sum += lanczos[j] / (z + (double)j); }
     sum += lanczos[0];
-
-    return ((LnSqrt2Pi + log(sum)) - base) + log(base) * (z + 0.5);
+    return ((LNSQ2PI + log(sum)) - base) + log(base) * (z + 0.5);
 }
 
-#define ITERATIONS 200
-#define EPSILON 3.0e-7
+#define PQITERATIONS 120
+#define PQEPSILON 3e-7
 
 static double pseries(double a, double x) {
     double ap = a;
@@ -88,11 +90,11 @@ static double pseries(double a, double x) {
     double del = sum;
     double lng = lngamma(a);
 
-    for (int i = 0; i < ITERATIONS; ++i) {
+    for (int i = 0; i < PQITERATIONS; ++i) {
         ap += 1.0;
         del *= x / ap;
         sum += del;
-        if (fabs(del) < fabs(sum) * EPSILON) {
+        if (fabs(del) < fabs(sum) * PQEPSILON) {
             return sum * exp(-x + a * log(x) - lng);
         }
     }
@@ -106,7 +108,7 @@ static double qcfrac(double a, double x) {
     double lng = lngamma(a);
 
     a1 = x;
-    for (int i = 1; i <= ITERATIONS; ++i) {
+    for (int i = 1; i <= PQITERATIONS; ++i) {
         an = (double)i;
         ana = an - a;
         a0 = (a1 + a0 * ana) * fac;
@@ -119,7 +121,7 @@ static double qcfrac(double a, double x) {
         if (a1) {
             fac = 1.0 / a1;
             g = b1 * fac;
-            if (fabs((g - gold) / g) < EPSILON) {
+            if (fabs((g - gold) / g) < PQEPSILON) {
                 return g * exp(-x + a * log(x) - lng);
             }
             gold = g;
@@ -141,10 +143,8 @@ static double igfq(double a, double x) {
     else return qcfrac(a, x);
 }
 
-#define OneOverSqrt2 0.7071067811865475244
-
 static double normcdf(double z) {
-    z *= OneOverSqrt2;
+    z *= ISQ2;
     if (z < 0.0) return 0.5 * igfq(0.5, z * z);
     else return 0.5 * (1.0 + igfp(0.5, z * z));
 }
@@ -173,21 +173,22 @@ static double results(counter *c) {
     return pv;
 }
 
-static int bsizes[] = { 7, 32, 52, 53, 63, 65, 256, 1000 };
-static char *testnames[] = { "int.uni", "flt.uni", "sgn.uni", "sgn.nrm" };
+static int bsizes[] = { 7, 32, 52, 53, 65, 256, 1000 };
+static char *testnames[] = {
+    "int.uni", "flt.uni", "sgn.uni", "sgn.nrm", "flt.exp"
+};
 
-#define OneOverSqrt2Pi 0.3989422804014327
-
-static int onetest(ojr_generator *g, int type) {
+static int distribution_test(ojr_generator *g, int type) {
     int r, n;
-    double d;
+    double d, bw, left, right;
 
-    n = bsizes[ojr_rand(NULL, 8)];
+    n = CHOOSE(bsizes);
     counter *c = newcounter(n);
 
     if (1 == type) setrange(c, 0.0, 1.0);
     else if (2 == type) setrange(c, -1.0, 1.0);
     else if (3 == type) setrange(c, -3.0, 3.0);
+    else if (4 == type) setrange(c, 0.0, 10.0);
 
     switch (type) {
     case 0:
@@ -210,7 +211,13 @@ static int onetest(ojr_generator *g, int type) {
         break;
     case 3:
         for (long i = 0; i < iterations; ++i) {
-            d = ojr_next_gaussian(g);
+            d = ojr_next_normal(g);
+            INCV(c, d);
+        }
+        break;
+    case 4:
+        for (long i = 0; i < iterations; ++i) {
+            d = ojr_next_exponential(g);
             INCV(c, d);
         }
         break;
@@ -218,15 +225,24 @@ static int onetest(ojr_generator *g, int type) {
     c->alg = ojr_algorithm_name(g->algorithm);
     c->test = testnames[type];
 
-    if (3 == type) {
+    if (type > 2) {
         assert(NULL == c->ev);
         c->ev = calloc(c->n, sizeof(double));
-        double bw = (c->mx - c->mn) / c->n;
-
-        double left = normcdf(c->mn);
+        bw = (c->mx - c->mn) / c->n;        
+    }
+    if (3 == type) {
+        left = normcdf(c->mn);
         for (int i = 0; i < (c->n + 1) >> 1; ++i) {
-            double right = normcdf(c->mn + (i + 1) * bw);
+            right = normcdf(c->mn + (i + 1) * bw);
             c->ev[i] = c->ev[(c->n - 1) - i] = c->total * (right - left);
+            left = right;
+        }
+    } else if (4 == type) {
+        assert(0.0 == c->mn && 10.0 == c->mx);
+        left = 0.0;
+        for (int i = 0; i < c->n; ++i) {
+            right = 1.0 - exp(-bw * (i + 1));
+            c->ev[i] = c->total * (right - left);
             left = right;
         }
     }
@@ -245,21 +261,22 @@ int loop(int count) {
     }
 
     for (int i = 0; i < count; ++i) {
-        int a = ojr_rand(NULL, ACOUNT);
+        ojr_generator *g = CHOOSE(gens);
         int t = ojr_rand(NULL, 100);
 
-        if (t < 40) {
-            f = onetest(gens[a], 0);
-        } else if (t < 60) {
-            f = onetest(gens[a], 1);
-        } else if (t < 80) {
-            f = onetest(gens[a], 2);            
+        if (t < 30) {
+            f = distribution_test(g, 0);
+        } else if (t < 50) {
+            f = distribution_test(g, 1);
+        } else if (t < 70) {
+            f = distribution_test(g, 2);            
+        } else if (t < 85) {
+            f = distribution_test(g, 3);            
         } else if (t < 100) {
-            f = onetest(gens[a], 3);            
+            f = distribution_test(g, 4);            
         }
         if (f) break;
     }
-
     for (int i = 0; i < ACOUNT; ++i) ojr_close(gens[i]);
     return f;
 }
@@ -285,7 +302,6 @@ int main(int argc, char *argv[]) {
         }
         /* NEVER EXITS */
     }
-
     f = loop(100);
     return EXIT_SUCCESS;
 }

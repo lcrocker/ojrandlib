@@ -156,10 +156,16 @@ JNIEXPORT jdouble JNICALL Java_com_onejoker_randlib_Generator_nNextSignedDouble
 	return ojr_next_signed_double((ojr_generator *)ptr);
 }
 
-JNIEXPORT jdouble JNICALL Java_com_onejoker_randlib_Generator_nNextGaussian
+JNIEXPORT jdouble JNICALL Java_com_onejoker_randlib_Generator_nNextNormal
 (JNIEnv *env, jclass cls, jobject b) {
     jbyte *ptr = (*env)->GetDirectBufferAddress(env, b);
-	return ojr_next_gaussian((ojr_generator *)ptr);
+	return ojr_next_normal((ojr_generator *)ptr);
+}
+
+JNIEXPORT jdouble JNICALL Java_com_onejoker_randlib_Generator_nNextExponential
+(JNIEnv *env, jclass cls, jobject b) {
+    jbyte *ptr = (*env)->GetDirectBufferAddress(env, b);
+    return ojr_next_normal((ojr_generator *)ptr);
 }
 
 JNIEXPORT jint JNICALL Java_com_onejoker_randlib_Generator_nRand

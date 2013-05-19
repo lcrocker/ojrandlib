@@ -81,7 +81,8 @@ public class Generator {
 
     public double nextDouble() { return nNextDouble(mS); }
     public double nextSignedDouble() { return nNextSignedDouble(mS); }
-    public double nextGaussian() { return nNextGaussian(mS); }
+    public double nextNormal() { return nNextNormal(mS); }
+    public double nextExponential() { return nNextExponential(mS); }
 
     public int rand(int limit) { return nRand(mS, limit); }
     public void discard(int count) { nDiscard(mS, count); }
@@ -113,7 +114,8 @@ public class Generator {
     private static native long nNext64(ByteBuffer b);
     private static native double nNextDouble(ByteBuffer b);
     private static native double nNextSignedDouble(ByteBuffer b);
-    private static native double nNextGaussian(ByteBuffer b);
+    private static native double nNextNormal(ByteBuffer b);
+    private static native double nNextExponential(ByteBuffer b);
 
     private static native int nRand(ByteBuffer b, int limit);
     private static native void nDiscard(ByteBuffer b, int count);

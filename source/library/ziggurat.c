@@ -4,11 +4,10 @@
  * copyright and related or neighboring rights to this work.
  * <http://creativecommons.org/publicdomain/zero/1.0/>
  *
- * This code is based on ZIGNOR by Jurgen A. Doornik: "An Improved Ziggurat
- * Method to Generate Normal Random Samples", mimeo, Nuffield College,
- * University of Oxford <www.doornik.com/research>. This notice should be
- * maintained in modified versions of the code. No warranty is given regarding
- * the correctness of this code.
+ * This code is based on George Marsaglia's Ziggurat algorithm, with
+ * various improvements from Jurgen A. Doornik and me. I believe it is
+ * sufficiently dissimilar to any pre-existing implementation that there
+ * should be no copyright problems, so my CC0 dedication applies.
  */
 
 #include <stdlib.h>
@@ -18,70 +17,66 @@
 #include <math.h>
 
 #include "ojrandlib.h"
+#include "zigtables.h"
 
-#define ZIGNOR_C 128
-#define ZIGNOR_R 3.442619855899
-#define ZIGNOR_V 9.91256303526217e-3
+// The sizes of 128 and 256 from GM's paper are good, but I recalculated
+// the constants here and built fixed tables based on them.
 
-static double s_adZigX[ZIGNOR_C + 1], s_adZigR[ZIGNOR_C];
-static int _zignor_table_initialized = 0;
+#define ZNR128 3.4426198558966521215
+#define ZNV128 0.0099125630353364610783
+#define ZER256 7.6971174701310497127
+#define ZEV256 0.0039496598225815572248
 
-static void _zignor_init(int iC, double dR, double dV) {
+double ojr_next_exponential(ojr_generator *g) {
+    uint64_t r;
     int i;
-    double f;
+    double x, u0, f0, f1;
 
-    f = exp(-0.5 * dR * dR);
-    s_adZigX[0] = dV / f; /* [0] is bottom block: V / f(R) */
-    s_adZigX[1] = dR;
-    s_adZigX[iC] = 0;
+    while (1) {
+        r = ojr_next64(g);
+        i = r & 0xFF;
+        r = (r >> 8) & 0xFFFFFFFFFFFFFULL;
+        r |= 0x3FF0000000000000ULL;
+        u0 = *(double *)(&r) - 1.0;
 
-    for (i = 2; i < iC; ++i) {
-        s_adZigX[i] = sqrt(-2 * log(dV / s_adZigX[i - 1] + f));
-        f = exp(-0.5 * s_adZigX[i] * s_adZigX[i]);
-    }
-    for (i = 0; i < iC; ++i) {
-        s_adZigR[i] = s_adZigX[i + 1] / s_adZigX[i];
+        if (u0 < zer[i]) return u0 * zex[i];
+        if (0 == i) return ZER256 - log(ojr_next_double(g));
+
+        x = u0 * zex[i];
+        f0 = exp(x - zex[i]);
+        f1 = exp(x - zex[i+1]);
+        if (f1 + ojr_next_double(g) * (f0 - f1) < 1.0) return x;
     }
 }
 
-static double _normal_tail(ojr_generator *g, double dmin, int neg) {
-    double x, y;
-
-    do {
-        x = log(ojr_next_double(g)) / dmin;
-        y = log(ojr_next_double(g));
-    } while (-2 * y < x * x);
-    return neg ? x - dmin : dmin - x;
-}
-
-double ojr_next_gaussian(ojr_generator *g) {
+double ojr_next_normal(ojr_generator *g) {
+    uint64_t r;
     int i, sign;
-    double x, a, u, f0, f1;
-    uint64_t r64;
+    double x, y, a, u0, f0, f1;
 
-    if (! _zignor_table_initialized) {
-        _zignor_init(ZIGNOR_C, ZIGNOR_R, ZIGNOR_V);
-        _zignor_table_initialized = 1;
-    }
     while (1) {
         do {
-            r64 = ojr_next64(g);
-            sign = (int)r64 & 1;
-            i = (r64 >> 1) & 0x7F;
-            r64 >>= 12;
-        } while (sign && 0LL == r64);
+            r = ojr_next64(g);
+            sign = (int)r & 1;
+            i = (r >> 1) & 0x7F;
+            r >>= 12;
+        } while (sign && 0LL == r);
 
-        r64 |= 0x3FF0000000000000;
-        a = *(double *)(&r64) - 1.0;
-        u = sign ? -a : a;
+        r |= 0x3FF0000000000000ULL;
+        a = *(double *)(&r) - 1.0;
+        u0 = sign ? -a : a;
 
-        if (a < s_adZigR[i]) return u * s_adZigX[i];
-        if (0 == i) return _normal_tail(g, ZIGNOR_R, sign);
-
-        x = u * s_adZigX[i];
-        f0 = exp( -0.5 * (s_adZigX[i] * s_adZigX[i] - x * x) );
-        f1 = exp( -0.5 * (s_adZigX[i + 1] * s_adZigX[i + 1] - x * x) );
-
+        if (a < znr[i]) return u0 * znx[i];
+        if (0 == i) {
+            do {
+                x = log(ojr_next_double(g)) / ZNR128;
+                y = log(ojr_next_double(g));
+            } while (-2.0 * y < x * x);
+            return sign ? x - ZNR128 : ZNR128 - x;
+        }
+        x = u0 * znx[i];
+        f0 = exp(-0.5 * (znx[i] * znx[i] - x * x));
+        f1 = exp(-0.5 * (znx[i+1] * znx[i+1] - x * x));
         if (f1 + ojr_next_double(g) * (f0 - f1) < 1.0) return x;
     }
 }

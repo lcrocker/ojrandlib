@@ -113,7 +113,7 @@ void ojr_reseed(ojr_generator *g, uint32_t *seed, int size) {
 
 uint32_t ojr_next32(ojr_generator *g) {
     if (NULL == g) g = &ojr_default_generator;
-    else { assert(0x5eed1e55 == g->init && g->seeded); }
+    else { assert(0x5eed1e55 == g->init && (g->flags & OJRF_SEEDED)); }
 
     if (g->bptr == g->buf) {
         ojr_call_refill(g);
@@ -125,7 +125,7 @@ uint32_t ojr_next32(ojr_generator *g) {
 uint16_t ojr_next16(ojr_generator *g) {
     uint16_t r16;
     if (NULL == g) g = &ojr_default_generator;
-    else { assert(0x5eed1e55 == g->init && g->seeded); }
+    else { assert(0x5eed1e55 == g->init && (g->flags & OJRF_SEEDED)); }
 
     if (g->leftover) {
         r16 = g->leftover & 0xFFFF;
@@ -143,18 +143,14 @@ uint16_t ojr_next16(ojr_generator *g) {
 }
 
 uint64_t ojr_next64(ojr_generator *g) {
-    uint64_t r64;
-
-    r64 = (uint64_t)ojr_next32(g);
-    return (r64 << 32) | ojr_next32(g);
+    uint64_t r = (uint64_t)ojr_next32(g);
+    return (r << 32) | ojr_next32(g);
 }
 
 // Return double in range [0,1).
 double ojr_next_double(ojr_generator *g) {
-    uint64_t r64;
-
-    r64 = (ojr_next64(g) >> 12) | 0x3FF0000000000000;
-    return *(double *)(&r64) - 1.0;
+    uint64_t r = (ojr_next64(g) >> 12) | 0x3FF0000000000000;
+    return *(double *)(&r) - 1.0;
 }
 
 // Return double in range (-1,1).
@@ -172,6 +168,8 @@ double ojr_next_signed_double(ojr_generator *g) {
     if (sign) return 1.0 - *(double *)(&r64);
     else return *(double *)(&r64) - 1.0;
 }
+
+// Functions next_normal and next_exponential are in ziggurat.c
 
 /* Return a well-balanced random integer from 0 to limit-1. Limited to 16 bits
  * for performance, because this kind of function is generally used to select

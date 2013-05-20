@@ -22,7 +22,7 @@ extern "C" {
 struct _ojr_generator {
     int init;       // Initialization and version check
     int leftover;   // Used by next16()
-    int seeded;     // Flag
+    int flags;
     int algorithm;  // 1-based index
     int statesize;  // Size of generator state in 32-bit words
     int bufsize;    // Size of output buffer
@@ -30,10 +30,15 @@ struct _ojr_generator {
     uint32_t *buf;      // Output buffer, allocated at runtime
     uint32_t *bptr;     // Points to address *after* next output word
                         // bptr = buf means empty buffer
-    struct _ojr_generator *next;    // For list of allcated generators
+    struct _ojr_generator *next;    // For list of allocated generators
+    double ilambda;     // For exponential variates
     void *extra;        // For miscellaneous client use
-    void *padding[4];   // Guarding against ABI change
+    void *padding[3];   // Guarding against ABI change
 };
+
+// Flags
+#define OJRF_SEEDED 0x01
+#define OJRF_LAMBDA 0x02
 
 /* Algorithm description. Should be immutable.
  */
@@ -90,8 +95,11 @@ extern uint32_t ojr_next32(ojr_generator *);
 extern uint64_t ojr_next64(ojr_generator *);
 extern double ojr_next_double(ojr_generator *);
 extern double ojr_next_signed_double(ojr_generator *);
+
+extern void ojr_set_shape(ojr_generator *, double);
 extern double ojr_next_exponential(ojr_generator *);
 extern double ojr_next_normal(ojr_generator *);
+extern double ojr_next_pareto(ojr_generator *);
 
 extern int ojr_rand(ojr_generator *, int);
 extern void ojr_discard(ojr_generator *, int);

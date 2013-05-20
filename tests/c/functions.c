@@ -79,7 +79,7 @@ int structureaccess(void) {
 
     ojr_init(&gen);
     if ((gen.init != 0x5eed1e55) ||
-        (gen.leftover != 0) || (gen.seeded != 0) ||
+        (gen.leftover != 0) || (gen.flags != 0) ||
         (gen.algorithm != 0) || (gen.statesize != 0) || (gen.bufsize != 0) ||
         (gen.state != NULL) || (gen.buf != NULL) || (gen.bptr != NULL) ||
         (gen.next != NULL) || (gen.extra != NULL)) return 200;

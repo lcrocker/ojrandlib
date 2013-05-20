@@ -32,12 +32,13 @@ int ojr_structure_size(void) { return sizeof(ojr_generator); }
 
 int ojr_get_seeded(ojr_generator *g) {
     assert(0x5eed1e55 == g->init);
-    return g->seeded;
+    return 0 != (g->flags & OJRF_SEEDED);
 }
 
 void ojr_set_seeded(ojr_generator *g, int val) {
     assert(0x5eed1e55 == g->init);
-    g->seeded = val;
+    if (val) g->flags |= OJRF_SEEDED;
+    else g->flags &= ~OJRF_SEEDED;
 }
 
 int ojr_get_algorithm(ojr_generator *g) {

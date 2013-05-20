@@ -150,14 +150,13 @@ static double normcdf(double z) {
 }
 
 static double pvalue(counter *c) {
-    double d, d2, m, ev, t = 0.0, chi2 = 0.0;
-    m = ev = (double)(c->total) / c->n;
+    double d, d2, ev, chi2 = 0.0;
+    ev = (double)(c->total) / c->n;
 
     for (int i = 0; i < c->n; ++i) {
         if (c->ev) ev = c->ev[i];
         d = (double)(c->counts[i]) - ev;
         d2 = d * d;
-        t += d2;
         chi2 += d2 / ev;
     }
     return igfq(0.5 * (c->n - 1), 0.5 * chi2);
@@ -281,8 +280,28 @@ int loop(int count) {
     return f;
 }
 
+void profile(void) {
+    counter *c = newcounter(1000);
+    setrange(c, 0.0, 5.0);
+
+    ojr_generator *g = ojr_open("mwc8222");
+    ojr_system_seed(g);
+    // ojr_set_lambda(g, 2.0);
+
+    for (int i = 0; i < 100000000; ++i) {
+        double d = ojr_next_exponential(g);
+        INCV(c,d);
+    }
+    /*
+    for (int i = 0; i < 1000; ++i) {
+        printf("%d %ld\n", i, c->counts[i]);
+    }
+    */
+    ojr_close(g);
+    closecounter(c);
+}
+
 int main(int argc, char *argv[]) {
-    int f = 0;
     char *alg;
 
     if (argc > 1 && (0 == strcmp("-d", argv[1]))) {
@@ -302,6 +321,6 @@ int main(int argc, char *argv[]) {
         }
         /* NEVER EXITS */
     }
-    f = loop(100);
-    return EXIT_SUCCESS;
+    int f = loop(100);
+    return f ? EXIT_FAILURE : EXIT_SUCCESS;
 }

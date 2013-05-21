@@ -18,7 +18,7 @@
 #include "ojrandlib.h"
 
 #define ACOUNT 3
-#define CHOOSE(a) (a)[ojr_rand(NULL,sizeof(a)/sizeof((a)[0]))]
+#define CHOOSE(a) (a)[ojr_rand(DEFGEN,sizeof(a)/sizeof((a)[0]))]
 
 static long iterations = 2000000;
 
@@ -227,7 +227,7 @@ static int distribution_test(ojr_generator *g, int type) {
     if (type > 2) {
         assert(NULL == c->ev);
         c->ev = calloc(c->n, sizeof(double));
-        bw = (c->mx - c->mn) / c->n;        
+        bw = (c->mx - c->mn) / c->n;
     }
     if (3 == type) {
         left = normcdf(c->mn);
@@ -261,18 +261,18 @@ int loop(int count) {
 
     for (int i = 0; i < count; ++i) {
         ojr_generator *g = CHOOSE(gens);
-        int t = ojr_rand(NULL, 100);
+        int t = ojr_rand(DEFGEN, 100);
 
         if (t < 30) {
             f = distribution_test(g, 0);
         } else if (t < 50) {
             f = distribution_test(g, 1);
         } else if (t < 70) {
-            f = distribution_test(g, 2);            
+            f = distribution_test(g, 2);
         } else if (t < 85) {
-            f = distribution_test(g, 3);            
+            f = distribution_test(g, 3);
         } else if (t < 100) {
-            f = distribution_test(g, 4);            
+            f = distribution_test(g, 4);
         }
         if (f) break;
     }
@@ -285,10 +285,9 @@ void profile(void) {
     setrange(c, 0.0, 5.0);
 
     ojr_generator *g = ojr_open("mwc8222");
-    ojr_system_seed(g);
     // ojr_set_lambda(g, 2.0);
 
-    for (int i = 0; i < 100000000; ++i) {
+    for (int i = 0; i < 1000000; ++i) {
         double d = ojr_next_exponential(g);
         INCV(c,d);
     }
@@ -310,12 +309,12 @@ int main(int argc, char *argv[]) {
 
         ojr_generator *g = ojr_open(alg);
         ojr_system_seed(g);
-        uint32_t buf[100];
+        uint64_t buf[100];
 
         fprintf(stderr, "Testing algorithm \"%s\".\n", alg);
         while (1) {
             for (int i = 0; i < 100; ++i) {
-                buf[i] = ojr_next32(g);
+                buf[i] = OJR_NEXT64(g);
             }
             write(STDOUT_FILENO, buf, sizeof(buf));
         }

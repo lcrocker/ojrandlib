@@ -68,6 +68,12 @@ class Generator(object):
         _lib.ojr_set_buffer(self.gen, self.buf, bs);
         _lib.ojr_call_open(self.gen)
 
+        size = algorithm_seedsize(_lib.ojr_get_algorithm(self.gen))
+        seed = (c_int32 * size)()
+        _lib.ojr_get_system_entropy(seed, size)
+        _lib.ojr_call_seed(self.gen, seed, size)
+        _lib.ojr_set_seeded(self.gen, 1)
+
     def __del__(self):
         _lib.ojr_call_close(self.gen)
 

@@ -31,14 +31,12 @@ struct _ojr_generator {
     uint32_t *bptr;     // Points to address *after* next output word
                         // bptr = buf means empty buffer
     struct _ojr_generator *next;    // For list of allocated generators
-    double ilambda;     // For exponential variates
     void *extra;        // For miscellaneous client use
-    void *padding[3];   // Guarding against ABI change
+    void *padding[4];   // Guarding against ABI change
 };
 
 // Flags
 #define OJRF_SEEDED 0x01
-#define OJRF_LAMBDA 0x02
 
 /* Algorithm description. Should be immutable.
  */
@@ -72,6 +70,15 @@ extern ojr_algorithm *ojr_algorithms[];
 extern ojr_generator *ojr_genlist_head;
 extern ojr_generator ojr_default_generator;
 
+#define DEFGEN (&ojr_default_generator)
+
+#if defined(STATICLIB)
+#  define OJRSTARTUP() ojr_library_startup()
+#  define OJRSHUTDOWN() ojr_library_shutdown()
+#else
+#  define OJRSTARTUP()
+#  define OJRSHUTDOWN()
+#endif
 
 /* PROTOTYPES */
 
@@ -96,7 +103,6 @@ extern uint64_t ojr_next64(ojr_generator *);
 extern double ojr_next_double(ojr_generator *);
 extern double ojr_next_signed_double(ojr_generator *);
 
-extern void ojr_set_shape(ojr_generator *, double);
 extern double ojr_next_exponential(ojr_generator *);
 extern double ojr_next_normal(ojr_generator *);
 extern double ojr_next_pareto(ojr_generator *);
@@ -148,6 +154,18 @@ extern void ojr_default_seed(ojr_generator *, uint32_t *, int);
 #ifdef __cplusplus
 } /* end of extern "C" */
 #endif /* __cplusplus */
+
+
+// Macro versions of some generator functions. Not recommended
+// for client use, as they eliminate error checking.
+
+#define OJR_NEXT32(g) ((((g)->bptr == (g)->buf) ? ( \
+ojr_call_refill(g), (g)->bptr = (g)->buf + (g)->bufsize \
+) : 0), *--(g)->bptr)
+
+#define OJR_NEXT64(g) ((((g)->bptr - (g)->buf) >= 2) \
+? ((g)->bptr -= 2, *(uint64_t *)((g)->bptr)) \
+: (((uint64_t)(ojr_next32(g)) << 32) | ojr_next32(g)))
 
 
 /* C++ declarations */

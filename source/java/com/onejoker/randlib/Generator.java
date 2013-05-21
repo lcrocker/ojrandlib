@@ -27,6 +27,13 @@ public class Generator {
         nGetSystemEntropy(b, count);
         return b;
     }
+    private static void systemSeed(ByteBuffer b) {
+        int s = nAlgorithmSeedSize(nGetAlgorithm(b));
+        ByteBuffer sb = ByteBuffer.allocateDirect(4 * s);
+        nGetSystemEntropy(sb, s);
+        nCallSeed(b, sb, s);
+        nSetSeeded(b, 1);
+    }
 
     public Generator(int id) {
         mS = ByteBuffer.allocateDirect(mStructSize);
@@ -41,6 +48,7 @@ public class Generator {
         this.mBuf = ByteBuffer.allocateDirect(4 * s);
         nSetBuf(mS, mBuf, s);
         nCallOpen(mS);
+        systemSeed(mS);
     }
     public Generator(String name) { this(Generator.algorithmID(name)); }
     public Generator() { this(1); }
@@ -61,13 +69,7 @@ public class Generator {
         nSetSeeded(mS, 1);
     }
 
-    public void seed() {
-        int s = nAlgorithmSeedSize(nGetAlgorithm(mS));
-        ByteBuffer b = ByteBuffer.allocateDirect(4 * s);
-        nGetSystemEntropy(b, s);
-        nCallSeed(mS, b, s);
-        nSetSeeded(mS, 1);
-    }
+    public void seed() { systemSeed(mS); }
 
     public void reseed() {
         int s = nAlgorithmSeedSize(nGetAlgorithm(mS));

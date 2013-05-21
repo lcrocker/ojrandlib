@@ -16,15 +16,15 @@ CFLAGS = -g -DDEBUG -Wall -std=c99 -pedantic -fpic
 CXX = g++
 CXXFLAGS = -g -DDEBUG -Wall -std=c++98 -pedantic -fpic
 LD = g++
-LDFLAGS = -nostartfiles
 SYSTEMLIBS = -lm
-
 JAVA_HOME ?= /usr/java
 JAVACFLAGS = -g -Werror
 # JAVACFLAGS = -g:none
 JPACKAGE = $(subst /,.,$(CLASSDIR))
 
 LIBNAME = libojrand.so
+LDFLAGS = -nostartfiles
+
 LIBCNAMES = init.c generator.c capi.c entropy.c ziggurat.c randomorg.c
 ALGORITHMS = algorithms.c jkiss127.c mt19937.c mwc8222.c
 TESTNAMES = hello cpphello hello.py Hello.class functions

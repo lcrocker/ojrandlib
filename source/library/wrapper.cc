@@ -27,14 +27,14 @@ void getRandomOrg(Seed &vec, int count) {
     ojr_get_random_org(vec.data(), count);
 }
 
-uint16_t next16(void){ return ojr_next16(NULL); }
-uint32_t next32(void) { return ojr_next32(NULL); }
-uint64_t next64(void) { return ojr_next64(NULL); }
-double nextDouble(void) { return ojr_next_double(NULL); }
-double nextSignedDouble(void) { return ojr_next_signed_double(NULL); }
-double nextNormal(void) { return ojr_next_normal(NULL); }
-double nextExponential(void) { return ojr_next_exponential(NULL); }
-int rand(int limit) { return ojr_rand(NULL, limit); }
+uint16_t next16(void){ return ojr_next16(DEFGEN); }
+uint32_t next32(void) { return ojr_next32(DEFGEN); }
+uint64_t next64(void) { return ojr_next64(DEFGEN); }
+double nextDouble(void) { return ojr_next_double(DEFGEN); }
+double nextSignedDouble(void) { return ojr_next_signed_double(DEFGEN); }
+double nextNormal(void) { return ojr_next_normal(DEFGEN); }
+double nextExponential(void) { return ojr_next_exponential(DEFGEN); }
+int rand(int limit) { return ojr_rand(DEFGEN, limit); }
 
 void Generator::_init(int id) {
     if (0 == id) id = 1;
@@ -46,6 +46,7 @@ void Generator::_init(int id) {
     ojr_set_state(this->cg, new uint32_t[ap->statesize], ap->statesize);
     ojr_set_buffer(this->cg, new uint32_t[ap->bufsize], ap->bufsize);
     ojr_call_open(this->cg);
+    ojr_system_seed(this->cg);
 }
 
 Generator::Generator(const char *name) {

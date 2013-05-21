@@ -116,7 +116,7 @@ int allequal(uint32_t *a, uint32_t *b, int count) {
 }
 
 int intseed(void) {
-    int i, f = 0, a = ojr_rand(NULL, ACOUNT);
+    int i, f = 0, a = ojr_rand(DEFGEN, ACOUNT);
     uint32_t r, second[4];
     ojr_generator *g = ojr_open(anames[a]);
     ojr_int_seed(g, arr01[a]);
@@ -134,7 +134,7 @@ int intseed(void) {
 }
 
 int arrayseed(void) {
-    int i, f =0, a = ojr_rand(NULL, ACOUNT);
+    int i, f =0, a = ojr_rand(DEFGEN, ACOUNT);
     uint32_t r, second[16], seed[4] = { 123, 234, 345, 456 };
     ojr_generator *g = ojr_open(anames[a]);
     ojr_array_seed(g, arr04[a], 4);
@@ -152,7 +152,7 @@ int arrayseed(void) {
 }
 
 int goodseed(void) {
-    int i, f = 0, a = ojr_rand(NULL, ACOUNT);
+    int i, f = 0, a = ojr_rand(DEFGEN, ACOUNT);
     uint32_t first[4], second[4];
     ojr_generator *g = ojr_open(anames[a]);
 
@@ -218,14 +218,14 @@ int fuzz(int count) {
     int i, test, sub, f = 0;
 
     for (i = 0; i < count; ++i) {
-        test = ojr_rand(NULL, 100);
+        test = ojr_rand(DEFGEN, 100);
 
         if (test < 15) {
             f = structureaccess();
         } else if (test < 30) {
             f = statics();
         } else if (test < 80) {
-            sub = ojr_rand(NULL, 3);
+            sub = ojr_rand(DEFGEN, 3);
             if (0 == sub) f = intseed();
             else if (1 == sub) f = arrayseed();
             else f = goodseed();

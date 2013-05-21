@@ -14,7 +14,7 @@
 
 int main(int argc, char *argv[]) {
     printf("  %d  %d  %d  %f\n",
-        ojr_rand(NULL, 100), ojr_next16(NULL), ojr_next32(NULL),
-        ojr_next_double(NULL));
+        ojr_rand(DEFGEN, 100), ojr_next16(DEFGEN), ojr_next32(DEFGEN),
+        ojr_next_double(DEFGEN));
     return 0;
 }

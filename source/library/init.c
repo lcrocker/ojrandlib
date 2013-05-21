@@ -14,6 +14,8 @@
 #include "ojrandlib.h"
 
 
+int _ojr_library_initialized = 0;
+
 // Keep track of allocated generator objects
 ojr_generator *ojr_genlist_head = NULL;
 
@@ -36,6 +38,7 @@ int ojr_library_startup(void) {
     ojr_call_open(&ojr_default_generator);
 
     ojr_system_seed(&ojr_default_generator);
+    _ojr_library_initialized = 0x5eed1e55;
     return 0;
 }
 
@@ -55,6 +58,7 @@ int ojr_close_all(void) {
 }
 
 int ojr_library_shutdown(void) {
+    assert(0x5eed1e55 == _ojr_library_initialized);
 
     int c = ojr_close_all();
     if (c) {

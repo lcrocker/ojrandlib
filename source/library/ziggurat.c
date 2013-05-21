@@ -27,43 +27,25 @@
 #define ZER256 7.6971174701310497140
 #define ZEV256 0.0039496598225815572200
 
-void ojr_set_lambda(ojr_generator *g, double val) {
-    if (1.0 == val) {
-        g->flags &= ~OJRF_LAMBDA;
-    } else {
-        g->flags |= OJRF_LAMBDA;
-        g->ilambda = 1.0 / val;
-    }
-}
-
 double ojr_next_exponential(ojr_generator *g) {
     uint64_t r;
     int i;
     double x, u0, f0, f1;
-    if (NULL == g) g = &ojr_default_generator;
 
     while (1) {
-        r = ojr_next64(g);
+        r = OJR_NEXT64(g);
         i = r & 0xFF;
         r = (r >> 8) & 0xFFFFFFFFFFFFFULL;
         r |= 0x3FF0000000000000ULL;
         u0 = *(double *)(&r) - 1.0;
 
-        if (u0 < zer[i]) {
-            if (g->flags & OJRF_LAMBDA) return g->ilambda * u0 * zex[i];
-            else return u0 * zex[i];
-        }
-        if (0 == i) {
-            if (g->flags & OJRF_LAMBDA) { 
-                return g->ilambda * (ZER256 - log(ojr_next_double(g)));
-            } else return ZER256 - log(ojr_next_double(g));
-        }
+        if (u0 < zer[i]) return u0 * zex[i];
+        if (0 == i) return ZER256 - log(ojr_next_double(g));
+
         x = u0 * zex[i];
         f0 = exp(x - zex[i]);
         f1 = exp(x - zex[i+1]);
-        if (f1 + ojr_next_double(g) * (f0 - f1) < 1.0) {
-            return (g->flags & OJRF_LAMBDA) ? g->ilambda * x : x;
-        }
+        if (f1 + ojr_next_double(g) * (f0 - f1) < 1.0) return x;
     }
 }
 
@@ -71,10 +53,10 @@ double ojr_next_normal(ojr_generator *g) {
     uint64_t r;
     int i, sign;
     double x, y, a, u0, f0, f1;
- 
+
     while (1) {
         do {
-            r = ojr_next64(g);
+            r = OJR_NEXT64(g);
             sign = (int)r & 1;
             i = (r >> 1) & 0x7F;
             r >>= 12;

@@ -98,8 +98,82 @@ static double zex[] = {
     0.063852163815003479795, 0.0
 };
 
-/* Pre-computed ratios for exponential
+/* Pre-computed ratios for exponential. Integer table is 52-bit mantiss of IEEE-754
+ * double from 1.0 to 2.0. This lets us do the inner comparison as an integer,
+ * but as it turn out this doesn't speed things up on m (32-bit) machines.
  */
+
+#ifdef INTEGER_COMPARE
+
+static unsigned long long zeri[] = {
+    0xe290a13924be4, 0xe6da6ecf27460, 0xeeefb15d605d9, 0xf2cb0e3c5933e,
+    0xf51530f0916d9, 0xf69c650c40a90, 0xf7b577d2be5f4, 0xf889f023d820a,
+    0xf930a1a281a05, 0xf9b72d1c52cd2, 0xfa263b32e37ee, 0xfa839276708ba,
+    0xfad334827f1e2, 0xfb18000547134, 0xfb5411a5b9a96, 0xfb890078d120e,
+    0xfbb8051ac1566, 0xfbe213c1cf493, 0xfc07ee19b01ce, 0xfc2a2fc826dc8,
+    0xfc4957623cb04, 0xfc65ccf39c2fc, 0xfc7fe6d4d720e, 0xfc97ed4e778fa,
+    0xfcae1d5e81fbd, 0xfcc2aadbc17dc, 0xfcd5c220ad5e2, 0xfce7895bcfcde,
+    0xfcf8219b5df06, 0xfd07a7a3ef98b, 0xfd16349e2e04a, 0xfd23dea45f500,
+    0xfd30b9368f90a, 0xfd3cd59a8469e, 0xfd48432b7b352, 0xfd530f9ccff94,
+    0xfd5d473200306, 0xfd66f4edf96ba, 0xfd7022bb3f083, 0xfd78d98e23cd4,
+    0xfd812182170e1, 0xfd8901f2d4b02, 0xfd9081922142a, 0xfd97a67a9ce20,
+    0xfd9e76401f3a4, 0xfda4f5fdfb4e9, 0xfdab2a6379bf1, 0xfdb117becb4a2,
+    0xfdb6c206aaaca, 0xfdbc2ce2dc4ae, 0xfdc15bb3b2daa, 0xfdc65198ba50c,
+    0xfdcb1176a55fe, 0xfdcf9dfc95b0d, 0xfdd3f9a8d3857, 0xfdd826cd068c7,
+    0xfddc2791ff352, 0xfddffdfb1dbd6, 0xfde3abe9626f3, 0xfde7331e3100e,
+    0xfdea953dcfc14, 0xfdedd3d1aa204, 0xfdf0f04a5d30a, 0xfdf3ec0193eee,
+    0xfdf6c83bb8664, 0xfdf986297e306, 0xfdfc26e94a448, 0xfdfeab887b95c,
+    0xfe011504979b2, 0xfe03644c5d7f8, 0xfe059a40c26d2, 0xfe07b7b5d920a,
+    0xfe09bd73a6b5c, 0xfe0bac36e6688, 0xfe0d84b1bdd9e, 0xfe0f478c633ac,
+    0xfe10f565b69d0, 0xfe128ed3cf8b2, 0xfe1414647fe78, 0xfe15869dccfd0,
+    0xfe16e5fe5f932, 0xfe1832fdebc44, 0xfe196e0d9140d, 0xfe1a9798349b9,
+    0xfe1bb002d22ca, 0xfe1cb7accb0a6, 0xfe1daef02c8da, 0xfe1e9621f2c9e,
+    0xfe1f6d92465b1, 0xfe20358cb5dfc, 0xfe20ee586b708, 0xfe2198385e5cc,
+    0xfe22336b81711, 0xfe22c02cee01c, 0xfe233eb40bf42, 0xfe23af34b6f74,
+    0xfe2411df611bd, 0xfe2466e132f60, 0xfe24ae64296fa, 0xfe24e88f316f2,
+    0xfe2515864173a, 0xfe25356a71450, 0xfe25485a0fd1a, 0xfe254e70b7550,
+    0xfe2547c75fdc6, 0xfe253474703fe, 0xfe25148bcda1a, 0xfe24e81ee9858,
+    0xfe24af3cce90e, 0xfe2469f22bffc, 0xfe2418495fddd, 0xfe23ba4a800da,
+    0xfe234ffb62282, 0xfe22d95fa23f4, 0xfe225678a8896, 0xfe21c745adfe4,
+    0xfe212bc3bfeb4, 0xfe2083edc2830, 0xfe1fcfbc726d4, 0xfe1f0f26655a0,
+    0xfe1e4220099a4, 0xfe1d689ba4bfd, 0xfe1c828951444, 0xfe1b8fd6fb37c,
+    0xfe1a90705bf64, 0xfe19843ef4e08, 0xfe186b2a09177, 0xfe1745169635a,
+    0xfe1611e74c023, 0xfe14d17c83188, 0xfe1383b4327e2, 0xfe122869e4200,
+    0xfe10bf76a82ef, 0xfe0f48b107522, 0xfe0dc3ecf3a5a, 0xfe0c30fbb87a6,
+    0xfe0a8fabe8ca2, 0xfe08dfc94c532, 0xfe07211ccb4c5, 0xfe05536c58a14,
+    0xfe03767adaa5a, 0xfe018a08122c4, 0xfdff8dd07fed8, 0xfdfd818d48262,
+    0xfdfb64f414572, 0xfdf937b6f30ba, 0xfdf6f98435894, 0xfdf4aa064b4b0,
+    0xfdf248e39b26f, 0xfdefd5be59fa1, 0xfded50345eb36, 0xfdeab7def394e,
+    0xfde80c52a47d0, 0xfde54d1f0a06b, 0xfde279ce914cb, 0xfddf91e64014f,
+    0xfddc94e575272, 0xfdd98245a48a2, 0xfdd6597a0f60c, 0xfdd319ef77143,
+    0xfdcfc30bcb794, 0xfdcc542dd3902, 0xfdc8ccacd07ba, 0xfdc52bd81a3fb,
+    0xfdc170f6b5d04, 0xfdbd9b46e3ed4, 0xfdb9a9fda83cc, 0xfdb59c4648086,
+    0xfdb17141bff2c, 0xfdad28062fed6, 0xfda8bf9e3c9fe, 0xfda437086566c,
+    0xfd9f8d364df06, 0xfd9ac10bfa70c, 0xfd95d15efd426, 0xfd90bcf594b1e,
+    0xfd8b8285b78fe, 0xfd8620b40effa, 0xfd809612dbd0a, 0xfd7ae120c5840,
+    0xfd75004790eb6, 0xfd6ef1dabc161, 0xfd68b415fcff5, 0xfd62451ba02c3,
+    0xfd5ba2f2c4119, 0xfd54cb856dc2c, 0xfd4dbc9e72ff8, 0xfd4673e73543b,
+    0xfd3eeee528f62, 0xfd372af7233c2, 0xfd2f2552684bf, 0xfd26daff73552,
+    0xfd1e48d670342, 0xfd156b7b5e27e, 0xfd0c3f59d199d, 0xfd02c0a049b60,
+    0xfcf8eb3b0d0e8, 0xfceebace7ec02, 0xfce42ab0db8be, 0xfcd935e34bf80,
+    0xfccdd70a35d40, 0xfcc20864b4449, 0xfcb5c3c319c4a, 0xfca9027c5b26e,
+    0xfc9bbd623d7ec, 0xfc8decb41ac70, 0xfc7f881009f0c, 0xfc7086622e825,
+    0xfc60ddd1e9cd6, 0xfc5083ac9ba7e, 0xfc3f6c4d92132, 0xfc2d8b02b5c8a,
+    0xfc1ad1ed6c8b1, 0xfc0731df1089c, 0xfbf29a303cfc5, 0xfbdcf89209ffb,
+    0xfbc638d822e60, 0xfbae44ba684ec, 0xfb95038c8789d, 0xfb7a59e99727a,
+    0xfb5e295158174, 0xfb404fb42cb3d, 0xfb20a6ea22bb9, 0xfaff041086846,
+    0xfadb36c84cccc, 0xfab5084e1f660, 0xfa8c3a62e1992, 0xfa6085f8e9d08,
+    0xfa319996bc47e, 0xf9ff175b734a6, 0xf9c8928abe083, 0xf98d8c7dcaa99,
+    0xf94d70ca8d43a, 0xf9079062292b9, 0xf8bb1b4f8fbbe, 0xf867189d3cb5c,
+    0xf80a5bb6eea52, 0xf7a37651b0e68, 0xf730a57372b44, 0xf6afb7843cce8,
+    0xf61de83da32ac, 0xf577ad8a77850, 0xf4b86d784571f, 0xf3da104b78236,
+    0xf2d458bbe5bd2, 0xf19bdb8ea3c1c, 0xf0204efd64ee5, 0xee49a6e8b9639,
+    0xebf2deab58c5a, 0xe8dff16ae1cba, 0xe4a8e87c4328e, 0xde893fb8ca23e,
+    0xd4ddb99075857, 0xc377ac71f9e08, 0x9beadebce18c0, 0x0000000000000
+};
+
+#else /* INTEGER_COMPARE */
+
 static double zer[] = {
     0.88501937527757322315, 0.90177052075821256646, 0.93334492234895648175,
     0.94841088269568240232, 0.95735460160488214522, 0.96332389401564794965,
@@ -189,6 +263,8 @@ static double zer[] = {
     0.0
 };
 
+#endif /* INTEGER_COMPARE */
+
 /* x values for normal
  */
 static double znx[] = {
@@ -239,6 +315,46 @@ static double znx[] = {
 
 /* Pre-computed ratios for normal
  */
+
+#ifdef INTEGER_COMPARE
+
+static unsigned long long znri[] = {
+    0xed5a442469c86, 0xefacc9cb3e7aa, 0xf4e442ecd31e5, 0xf75217b867634,
+    0xf8c01e3503b08, 0xf9b36957d7631, 0xfa61c12ef4eb7, 0xfae541f793634,
+    0xfb4c343c9e1c5, 0xfb9f18e44c3e1, 0xfbe354bbf1767, 0xfc1c7fea75fb0,
+    0xfc4d185e5531c, 0xfc76e6f466e4a, 0xfc9b3bdb13e7c, 0xfcbb14343dfc6,
+    0xfcd7326658ef6, 0xfcf02e5177e26, 0xfd068067ddaaa, 0xfd1a8974e5bec,
+    0xfd2c982d9aad4, 0xfd3ced3f00195, 0xfd4bbe4f6092c, 0xfd593840d12ae,
+    0xfd6580ea1b2bc, 0xfd70b86ae5620, 0xfd7afa35123bc, 0xfd845ddde3918,
+    0xfd8cf7c45b13d, 0xfd94d996bb7b8, 0xfd9c12be84a33, 0xfda2b0b870f3d,
+    0xfda8bf5ca5dda, 0xfdae491a4e358, 0xfdb357291a996, 0xfdb7f1b297b80,
+    0xfdbc1ff4dff8a, 0xfdbfe85fdcaba, 0xfdc350ae0c352, 0xfdc65df991f31,
+    0xfdc914ce2e803, 0xfdcb7938a0f84, 0xfdcd8ed3da109, 0xfdcf58d456e0c,
+    0xfdd0da11e9f85, 0xfdd215102d142, 0xfdd30c05cbca8, 0xfdd3c0e2cf5d4,
+    0xfdd435560d34d, 0xfdd46ad1d3fcc, 0xfdd4628feecae, 0xfdd41d9511e21,
+    0xfdd39cb3c16b8, 0xfdd2e08ebfc9e, 0xfdd1e99b0ed53, 0xfdd0b8218d4e9,
+    0xfdcf4c403820a, 0xfdcda5eb15778, 0xfdcbc4ecce608, 0xfdc9a8e6fa667,
+    0xfdc751521f7ce, 0xfdc4bd7d677d6, 0xfdc1ec8e0b74a, 0xfdbedd7e7400c,
+    0xfdbb8f1d0d018, 0xfdb8000ac9d97, 0xfdb42eb9566ff, 0xfdb01968f0058,
+    0xfdabbe25dfb4e, 0xfda71ac58f28b, 0xfda22ce32e93e, 0xfd9cf1dbe152e,
+    0xfd9766ca64bc2, 0xfd91888222809, 0xfd8b53899d846, 0xfd84c414253d6,
+    0xfd7dd5fab84c2, 0xfd7684b3fb21d, 0xfd6ecb4b22e88, 0xfd66a455af7c8,
+    0xfd5e09e7c8d04, 0xfd54f5870c6c8, 0xfd4b601b8e90c, 0xfd4141dec7704,
+    0xfd36924817bd3, 0xfd2b47f67f96e, 0xfd1f58970f524, 0xfd12b8c7819d6,
+    0xfd055bf4510cd, 0xfcf7343176cb3, 0xfce8320cd30d2, 0xfcd8445907b17,
+    0xfcc757ef46ec0, 0xfcb557663edce, 0xfca22abbd9f86, 0xfc8db6eefbc4a,
+    0xfc77dd85a7a77, 0xfc607bfb0eb27, 0xfc476b0fc6cba, 0xfc2c7df4cf4d6,
+    0xfc0f8147e0d64, 0xfbf039d4a3f47, 0xfbce630a82c39, 0xfba9ad1171480,
+    0xfb81ba60a1dd7, 0xfb561cafbb9ee, 0xfb26510c6d072, 0xfaf1bac8fa7fa,
+    0xfab79cd957292, 0xfa77110617069, 0xfa2efc1667f12, 0xf9ddfda5b286d,
+    0xf98259adad18c, 0xf919d8b6b9594, 0xf8a199cebca78, 0xf815ce44612cc,
+    0xf771518c32c94, 0xf6ad054c5acb2, 0xf5bec53e6296a, 0xf4979cba30c88,
+    0xf3208b87a197a, 0xf1344b7af4e43, 0xee9243d6d8ea4, 0xeac00a3a040d4,
+    0xe4b68d43fed6a, 0xd9c88f4d8196a, 0xc01e36a71ab0a, 0x0000000000000
+};
+
+#else /* INTEGER_COMPARE */
+
 static double znr[] = {
     0.92715860260958181763, 0.93623028957379485899, 0.956607992952848114,
     0.96609638454482378182, 0.9716814879827228456, 0.97539385218204825123,
@@ -284,3 +400,5 @@ static double znr[] = {
     0.9169927970543101827, 0.89341051969571562459, 0.85071654932252244876,
     0.75046102122968457378, 0.0
 };
+
+#endif /* INTEGER_COMPARE */

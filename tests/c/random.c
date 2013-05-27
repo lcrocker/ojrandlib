@@ -285,11 +285,10 @@ void profile(void) {
     setrange(c, 0.0, 5.0);
 
     ojr_generator *g = ojr_open("mwc8222");
-    // ojr_set_lambda(g, 2.0);
 
-    for (int i = 0; i < 1000000; ++i) {
-        double d = ojr_next_exponential(g);
-        INCV(c,d);
+    for (int i = 0; i < 100000000; ++i) {
+        /* double d = */ ojr_next_normal(g);
+        /* INCV(c,d); */
     }
     /*
     for (int i = 0; i < 1000; ++i) {
@@ -302,6 +301,9 @@ void profile(void) {
 
 int main(int argc, char *argv[]) {
     char *alg;
+
+    // profile();
+    // return 0;
 
     if (argc > 1 && (0 == strcmp("-d", argv[1]))) {
         if (argc > 2) alg = argv[2];

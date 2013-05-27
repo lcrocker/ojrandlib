@@ -105,7 +105,6 @@ extern double ojr_next_signed_double(ojr_generator *);
 
 extern double ojr_next_exponential(ojr_generator *);
 extern double ojr_next_normal(ojr_generator *);
-extern double ojr_next_pareto(ojr_generator *);
 
 extern int ojr_rand(ojr_generator *, int);
 extern void ojr_discard(ojr_generator *, int);

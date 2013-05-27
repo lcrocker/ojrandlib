@@ -17,6 +17,10 @@
 #include <math.h>
 
 #include "ojrandlib.h"
+
+// On some (32-bit) machines, comparison of doubles might actually be
+// faster than 64-bit integer compares, so comment out this define
+#define INTEGER_COMPARE 1
 #include "zigtables.h"
 
 // The sizes of 128 and 256 from GM's paper are good, but I recalculated
@@ -36,12 +40,25 @@ double ojr_next_exponential(ojr_generator *g) {
         r = OJR_NEXT64(g);
         i = r & 0xFF;
         r = (r >> 8) & 0xFFFFFFFFFFFFFULL;
+
+#ifdef INTEGER_COMPARE
+        if (r < zeri[i]) {
+            r |= 0x3FF0000000000000ULL;
+            u0 = *(double *)(&r) - 1.0;
+            return u0 * zex[i];
+        }
+#else
         r |= 0x3FF0000000000000ULL;
         u0 = *(double *)(&r) - 1.0;
 
         if (u0 < zer[i]) return u0 * zex[i];
+#endif
         if (0 == i) return ZER256 - log(ojr_next_double(g));
 
+#ifdef INTEGER_COMPARE
+        r |= 0x3FF0000000000000ULL;
+        u0 = *(double *)(&r) - 1.0;
+#endif
         x = u0 * zex[i];
         f0 = exp(x - zex[i]);
         f1 = exp(x - zex[i+1]);
@@ -62,11 +79,19 @@ double ojr_next_normal(ojr_generator *g) {
             r >>= 12;
         } while (sign && 0LL == r);
 
+#ifdef INTEGER_COMPARE
+        if (r < znri[i]) {
+            r |= 0x3FF0000000000000ULL;
+            a = *(double *)(&r) - 1.0;
+            return znx[i] * (sign ? -a : a);
+        }
+#else
         r |= 0x3FF0000000000000ULL;
         a = *(double *)(&r) - 1.0;
         u0 = sign ? -a : a;
 
         if (a < znr[i]) return u0 * znx[i];
+#endif
         if (0 == i) {
             do {
                 x = log(ojr_next_double(g)) / ZNR128;
@@ -74,13 +99,15 @@ double ojr_next_normal(ojr_generator *g) {
             } while (-2.0 * y < x * x);
             return sign ? x - ZNR128 : ZNR128 - x;
         }
+#ifdef INTEGER_COMPARE
+        r |= 0x3FF0000000000000ULL;
+        a = *(double *)(&r) - 1.0;
+        x = znx[i] * (sign ? -a : a);
+#else
         x = u0 * znx[i];
+#endif
         f0 = exp(-0.5 * (znx[i] * znx[i] - x * x));
         f1 = exp(-0.5 * (znx[i+1] * znx[i+1] - x * x));
         if (f1 + ojr_next_double(g) * (f0 - f1) < 1.0) return x;
     }
-}
-
-double ojr_next_pareto(ojr_generator *g) {
-    return exp(ojr_next_exponential(g));
 }

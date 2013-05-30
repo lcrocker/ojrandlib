@@ -108,6 +108,7 @@ extern double ojr_next_normal(ojr_generator *);
 
 extern int ojr_rand(ojr_generator *, int);
 extern void ojr_discard(ojr_generator *, int);
+extern void ojr_array_with_sum(ojr_generator *, int *, int, int);
 
 extern void ojr_shuffle_int_array(ojr_generator *, int *, int, int);
 extern void ojr_shuffle_pointer_array(ojr_generator *, void **, int, int);

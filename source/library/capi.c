@@ -154,7 +154,7 @@ uint64_t ojr_next64(ojr_generator *g) {
 
 // Return double in range [0,1).
 double ojr_next_double(ojr_generator *g) {
-    uint64_t r = (OJR_NEXT64(g) >> 12) | 0x3FF0000000000000;
+    uint64_t r = (OJR_NEXT64(g) & 0xFFFFFFFFFFFFFull) | 0x3FF0000000000000ull;
     return *(double *)(&r) - 1.0;
 }
 
@@ -232,4 +232,18 @@ void ojr_discard(ojr_generator *g, int count) {
             count -= g->bufsize;
         }
     } while (count);
+}
+
+static int compare(const void *a, const void *b) {
+    return *(int*)a - *(int*)b;
+}
+
+// Fill given array with <count> random integers that add to <sum>.
+// Sort-and-diff method assures uniform distribution.
+void ojr_array_with_sum(ojr_generator *g, int *a, int count, int sum) {
+    int i;
+    for (i = 0; i < count-1; ++i) { a[i] = ojr_rand(g, sum+1); }
+    qsort(a, count-1, sizeof(int), compare);
+    a[count-1] = sum;
+    for (i = count-1; i > 0; --i) { a[i] -= a[i-1]; }
 }
